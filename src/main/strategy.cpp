@@ -13,6 +13,7 @@
 #include "../shared/stringview.h"
 #include "invert_strategy.h"
 
+#include "strategy_mca.h"
 #include "sgn.h"
 #include "strategy_halfhalf.h"
 #include "strategy_keepvalue.h"
@@ -65,7 +66,13 @@ void initConfig(Cfg &cfg, json::Value config,
 
 Strategy Strategy::create_base(std::string_view id, json::Value config) {
 
-	if (id == Strategy_HalfHalf::id) {
+	if (id == Strategy_Mca::id) {
+		Strategy_Mca::Config cfg;
+		cfg.buyStrength = config["buyStrength"].getNumber();
+		cfg.sellStrength = config["sellStrength"].getNumber();
+		cfg.initBet = config["initBet"].getNumber();
+		return Strategy(new Strategy_Mca(cfg));
+	} else if (id == Strategy_HalfHalf::id) {
 		Strategy_HalfHalf::Config cfg;
 		cfg.ea = config["ea"].getNumber();
 		cfg.accum = config["accum"].getNumber();

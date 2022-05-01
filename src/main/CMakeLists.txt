@@ -13,6 +13,7 @@ add_executable (mmbot
 	webcfg.cpp	
 	traders.cpp
 	strategy.cpp
+	strategy_mca.cpp
 	strategy_halfhalf.cpp
 	strategy_constantstep.cpp
 	strategy_keepvalue.cpp

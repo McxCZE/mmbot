@@ -98,6 +98,7 @@ App.prototype.createTraderForm = function() {
 	var pl = form.findElements("goal_pl")[0];
 	form.dlgRules = function() {
 		var state = this.readData(["strategy","advanced","check_unsupp"]);
+		form.showItem("strategy_mca",state.strategy == "mathematical_cost_averaging");
 		form.showItem("strategy_halfhalf",state.strategy == "halfhalf" || state.strategy == "keepvalue" || state.strategy == "exponencial"||state.strategy == "hypersquare"||state.strategy == "conststep");
 		form.showItem("strategy_pl",state.strategy == "plfrompos");
 		form.showItem("strategy_pile",state.strategy == "pile");
@@ -677,10 +678,15 @@ App.prototype.fillForm = function (src, trg) {
 	data.incval_r = 100;
 	data.incval_ms = 0;
 	data.incval_ri = false;
+	data.buyStrength = 0.850;
+	data.sellStrength = 0.650;
+	data.initBet = 0;
 
-
-	
-	if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
+	if (data.strategy == "mathematical_cost_averaging") {
+		data.buyStrength = filledval(defval(src.strategy.buyStrength,0.850),1);
+		data.sellStrength = filledval(defval(src.strategy.sellStrength,0.650),1);
+		data.initBet = filledval(defval(src.strategy.initBet, 0), 0);
+	} else if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
 		data.acum_factor = filledval(defval(src.strategy.accum,0)*100,0);
 		data.external_assets = filledval(src.strategy.ea,0);
 		data.kv_valinc = filledval(src.strategy.valinc,0);
@@ -869,7 +875,14 @@ App.prototype.fillForm = function (src, trg) {
 function getStrategyData(data, inv) {
 	var strategy = {};
 	strategy.type = data.strategy;
-	if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
+	if (data.strategy == "mathematical_cost_averaging") {
+		strategy = {
+			type: data.strategy,
+			buyStrength: data.buyStrength,
+			sellStrength: data.sellStrength,
+			initBet: data.initBet
+		};
+	} else if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
 		strategy.accum = data.acum_factor/100.0;
 		strategy.ea = data.external_assets;
 		strategy.valinc = data.kv_valinc;
@@ -1915,7 +1928,7 @@ App.prototype.init_backtest = function(form, id, pair, broker) {
 		"incval_w","incval_r","incval_ms","incval_ri","incval_z",
 		"hedge_short","hedge_long","hedge_drop",
 		"shg_w","shg_p","shg_z","shg_b","shg_olt","shg_ol","shg_lp","shg_rnv","shg_avgsp","shg_boostmode","shg_lazyopen","shg_lazyclose","shg_offset",
-		"trade_within_budget"];
+		"trade_within_budget","buyStrength","sellStrength"];
 	var spread_inputs = ["spread_calc_stdev_hours","secondary_order", "spread_calc_sma_hours","spread_mult","dynmult_raise","dynmult_fall","dynmult_mode","dynmult_sliding","dynmult_cap","dynmult_mult","force_spread","spread_mode","spread_freeze"];
 	var leverage = form._pair.leverage != 0;	
 	var pairinfo = form._pair;
