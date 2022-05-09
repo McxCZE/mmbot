@@ -37,6 +37,7 @@ a {
 }
 #logfilearea{
 	position:relative;
+	margin-top:25px;
 }
 #logfileactivate {
 	text-align: center;
