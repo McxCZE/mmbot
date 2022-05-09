@@ -59,17 +59,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     bool alert = true;
 
 	if (std::isnan(st.enter) || std::isinf(st.enter) || effectiveAssets < minSize) {
-        //Lets Say that distance from enter is 1% <- (cfg.initiBet / 100) ? It is also in Perc.
-        // double buyStrengthInitial = std::sin(std::pow(0.01, 2)) / std::pow(1 - cfg.buyStrength, 4);
-        // double assetsToHoldWhenBuyingInitial = (st.budget * buyStrengthInitial) / price; //st.enter
         size = minSize;
-
-        // if (buyStrengthInitial < minSize) {size = minSize;} 
         if (initialBet > minSize) {size = initialBet;}
         if (dir < 0) { size = 0; }
-
-        // if (size < minSize) {size = 0; }
-        // size = minSize; // Bilion buys, better to use as condition maybe ? 
 	} else {
         double distEnter = 0;
         double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter);        
@@ -78,7 +70,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (st.enter > price) { distEnter = (st.enter - price) / st.enter; }
         if (st.enter < price) { distEnter = (price - st.enter) / price; }
 
-        if (distEnter > 1) {distEnter = 1;} // <- Muze byt vetsi jak 100% u hyperSracek.
+        if (distEnter > 1) {distEnter = 1;} // <- Muze byt vetsi jak 100% u hyperSracek. Jak osetrit ?
 
         double cfgSellStrength = cfg.sellStrength;
         double cfgBuyStrength = cfg.buyStrength;
@@ -100,7 +92,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // double sellStrength = -std::pow(distEnter, std::pow((1 - cfg.sellStrength), 4)) + 1;
         // double buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
 
-        //Development
+        //Sinusoids - Production release.
         double sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
         double buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
 
@@ -119,11 +111,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // Martingale
         // double assetsToHoldWhenBuying = effectiveAssets * 2;
         // double assetsToHoldWhenSelling = 0;
-
-        // Alesh - Development
-        // double assetsToSell = (sellStrength * effectiveAssets) / 100;
-        // double assetsToBuy = (buyStrength * availableCurrency) / price / 100;
-
 
         if (dir > 0 && st.enter > price) {
             size = assetsToHoldWhenBuying - effectiveAssets;
