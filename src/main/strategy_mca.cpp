@@ -58,7 +58,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 	double size = 0;
     bool alert = true;
 
-    if (effectiveAssets < 0) { 
+    if (st.assets < 0) { 
         effectiveAssets = 0; 
         return {size, alert};
     }
