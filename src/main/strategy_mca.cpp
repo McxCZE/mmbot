@@ -134,7 +134,10 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { 
-                size = effectiveAssets; // Prodaval pod cenou.
+                size = 0;
+                if (size < st.asset && size > assets) { size = st.asset; }
+                if (size < assets && size > st.asset) { size = assets; }
+                if (size < assets && size < st.asset) { size = effectiveAssets; }
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
