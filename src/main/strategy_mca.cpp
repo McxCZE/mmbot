@@ -189,7 +189,7 @@ double assetsLeft, double currencyLeft) const {
 	}
 
     if (tradeSize < 0 && st.assets < std::abs(tradeSize)) {
-        effectiveSize = st.assets;
+        effectiveSize = assetsLeft;
     }
 
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
