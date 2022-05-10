@@ -141,16 +141,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (dir < 0 && st.enter < price) {
             size = assetsToHoldWhenSelling - effectiveAssets;
 
-            if (size < 0) { 
-                //Jde do zaporu.
-                size = effectiveAssets;
-                alert = true;
-
-                // if (size < st.assets && size > assets) { size = st.assets; alert = false;}
-                // if (size < assets && size > st.assets) { size = assets; alert = false;}
-                // if (size < assets && size < st.assets) { size = effectiveAssets; alert = false;}
-            }
-
+            if (size < 0) { size = effectiveAssets; }
+            if (size < minSize) { size = 0; }
             if (size > effectiveAssets) { size = 0; alert = false; }
             // if (size < minSize) {size = 0; alert = false; }
             // if (size > effectiveAssets) { size = effectiveAssets; }
@@ -197,7 +189,7 @@ double assetsLeft, double currencyLeft) const {
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
     auto newAsset = st.assets + effectiveSize;
-    
+
     if (newAsset < 0) {
         newAsset = 0;
     }
