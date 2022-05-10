@@ -130,7 +130,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { 
-                size = st.assets;
+                size = st.assets; // Prodaval pod cenou.
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
@@ -187,10 +187,6 @@ double assetsLeft, double currencyLeft) const {
 	if (tradeSize > 0 && st.assets > assetsLeft - tradeSize) {
 		effectiveSize = std::max(assetsLeft - st.assets, zero); //0.0 -> 0d
 	}
-
-    if (tradeSize < 0 && st.assets < std::abs(tradeSize)) {
-        effectiveSize = assetsLeft;
-    }
 
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
