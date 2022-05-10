@@ -49,8 +49,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double availableCurrency = st.currency;
     double cfgInitBet = cfg.initBet;
 
-    if (effectiveAssets < 0) { effectiveAssets = 0; }
-
     if (cfgInitBet < 0) {cfgInitBet = 0;}
     if (cfgInitBet > 100) {cfgInitBet = 100;}
     if (std::isnan(cfgInitBet)) {cfgInitBet = 0;}
@@ -59,6 +57,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
 	double size = 0;
     bool alert = true;
+
+    if (effectiveAssets < 0) { 
+        effectiveAssets = 0; 
+        return {size, alert};
+    }
 
 	if (std::isnan(st.enter) || std::isinf(st.enter) || effectiveAssets < minSize) {
         size = minSize;
