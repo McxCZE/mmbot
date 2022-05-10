@@ -125,14 +125,17 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenBuying - effectiveAssets;
             if (size < 0) { 
                 size = minSize;
+                // Nakoupi tak ze jde do zaporneho currency.
                 alert = false; 
             }
+            
             if (size * price > availableCurrency) { 
                 size = availableCurrency / price;
             }
 
+            if (size < minSize) {size = 0;}
+
             // <- Sem if, pokud je asset * price > budget, a je vygenerovany nakupni prikaz = Alert. Dosli prachy.
-            // if (size < minSize) { size = 0; alert = false; }
         }
 
         if (dir < 0 && st.enter < price) {
