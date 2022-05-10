@@ -52,7 +52,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     bool alert = true;
 
     //Emergency Bailout
-    if (effectiveAssets < 0 || availableCurrency <= 0) {
+    if (effectiveAssets < 0 || availableCurrency <= 0 || assets < 0 || st.assets < 0 || st.budget < 0) {
         return {size, alert};
     }
 
