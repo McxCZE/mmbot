@@ -134,10 +134,13 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { 
+                //Jde do zaporu.
                 size = 0;
-                if (size < st.assets && size > assets) { size = st.assets; }
-                if (size < assets && size > st.assets) { size = assets; }
-                if (size < assets && size < st.assets) { size = effectiveAssets; }
+                alert = true;
+
+                if (size < st.assets && size > assets) { size = st.assets; alert = false;}
+                if (size < assets && size > st.assets) { size = assets; alert = false;}
+                if (size < assets && size < st.assets) { size = effectiveAssets; alert = false;}
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
