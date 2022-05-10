@@ -58,11 +58,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 	double size = 0;
     bool alert = true;
 
-    if (st.assets < 0) { 
-        effectiveAssets = 0; 
-        return {size, alert};
-    }
-
 	if (std::isnan(st.enter) || std::isinf(st.enter) || effectiveAssets < minSize) {
         size = minSize;
         if (initialBet > minSize) {size = initialBet;}
@@ -189,7 +184,7 @@ double assetsLeft, double currencyLeft) const {
 	auto effectiveSize = tradeSize;
 
 	if (tradeSize > 0 && st.assets > assetsLeft - tradeSize) {
-		effectiveSize = std::max(assetsLeft - st.assets, 0.0);
+		effectiveSize = std::max(assetsLeft - st.assets, 0d); //0.0 -> 0d
 	}
 
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
