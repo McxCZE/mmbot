@@ -182,9 +182,10 @@ const IStockApi::MarketInfo &minfo, double tradePrice, double tradeSize,
 double assetsLeft, double currencyLeft) const {
 	if (!isValid()) throw std::runtime_error("Strategy is not initialized in onTrade call.");
 	auto effectiveSize = tradeSize;
+    double zero = 0;
 
 	if (tradeSize > 0 && st.assets > assetsLeft - tradeSize) {
-		effectiveSize = std::max(assetsLeft - st.assets, 0d); //0.0 -> 0d
+		effectiveSize = std::max(assetsLeft - st.assets, zero); //0.0 -> 0d
 	}
 
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
