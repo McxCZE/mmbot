@@ -58,7 +58,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 	double size = 0;
     bool alert = true;
 
-    if (assets != st.assets) {
+    if (assets != st.assets) { //Je toho jak sracek. 
         return {size, alert};
     }
 
@@ -134,7 +134,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { 
-                size = 0; // Prodaval pod cenou.
+                size = effectiveAssets; // Prodaval pod cenou.
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
