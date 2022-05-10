@@ -130,7 +130,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { 
-                size = st.assets; // Prodaval pod cenou.
+                size = 0; // Prodaval pod cenou.
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
@@ -182,10 +182,9 @@ const IStockApi::MarketInfo &minfo, double tradePrice, double tradeSize,
 double assetsLeft, double currencyLeft) const {
 	if (!isValid()) throw std::runtime_error("Strategy is not initialized in onTrade call.");
 	auto effectiveSize = tradeSize;
-    double zero = 0;
 
 	if (tradeSize > 0 && st.assets > assetsLeft - tradeSize) {
-		effectiveSize = std::max(assetsLeft - st.assets, zero); //0.0 -> 0d
+		effectiveSize = std::max(assetsLeft - st.assets, 0.0);
 	}
 
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
