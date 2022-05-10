@@ -58,6 +58,10 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 	double size = 0;
     bool alert = true;
 
+    if (assets != st.assets) {
+        return {size, alert};
+    }
+
 	if (std::isnan(st.enter) || std::isinf(st.enter) || effectiveAssets < minSize) {
         size = minSize;
         if (initialBet > minSize) {size = initialBet;}
