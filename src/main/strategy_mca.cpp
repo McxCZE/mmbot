@@ -135,9 +135,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
             if (size < 0) { 
                 size = 0;
-                if (size < st.asset && size > assets) { size = st.asset; }
-                if (size < assets && size > st.asset) { size = assets; }
-                if (size < assets && size < st.asset) { size = effectiveAssets; }
+                if (size < st.assets && size > assets) { size = st.assets; }
+                if (size < assets && size > st.assets) { size = assets; }
+                if (size < assets && size < st.assets) { size = effectiveAssets; }
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
