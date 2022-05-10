@@ -52,7 +52,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     bool alert = true;
 
     //Emergency Bailout
-    if (effectiveAssets < 0 || availableCurrency <= 0 || assets < 0 || st.assets < 0 || st.budget < 0) {
+    if (effectiveAssets < 0 || availableCurrency < 0 || assets < 0 || st.assets < 0 || st.budget < 0) {
         return {size, alert};
     }
 
@@ -61,12 +61,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     if (std::isnan(cfgInitBet)) {cfgInitBet = 0;}
 
     double initialBet = ((cfgInitBet/ 100) * st.budget) / price;
-
-
-
-    if (assets != st.assets) { //Je toho jak sracek. 
-        return {size, alert};
-    }
 
 	if (std::isnan(st.enter) || std::isinf(st.enter) || effectiveAssets < minSize) {
         size = minSize;
