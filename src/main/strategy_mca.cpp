@@ -44,9 +44,9 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 }
 
 std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
-    double effectiveAssets = std::min(assets, st.assets);
+    double effectiveAssets = std::min(st.assets, assets);
     // double position = st.position;
-    double availableCurrency = st.currency;
+    double availableCurrency = std::max(0.0, st.currency);
     double cfgInitBet = cfg.initBet;
 	double size = 0;
     bool alert = true;
@@ -128,7 +128,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
                 // Nakoupi tak ze jde do zaporneho currency.
                 alert = false; 
             }
-            
+
             if (size * price > availableCurrency) { 
                 size = availableCurrency / price;
             }
