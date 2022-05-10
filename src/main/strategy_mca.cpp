@@ -67,6 +67,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (initialBet > minSize) {size = initialBet;}
         if (dir < 0) { size = 0; }
 	} else {
+
+         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
+        if (dir > 0 && st.enter < price) { size = 0; alert = false; return {size, alert};}
+        if (dir < 0 && st.enter > price) { size = 0; alert = false; return {size, alert};}
+
         double distEnter = 0;
         double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter);        
 
@@ -135,33 +140,22 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
             if (size < 0) { 
                 //Jde do zaporu.
-                size = 0;
+                size = effectiveAssets;
                 alert = true;
 
-                if (size < st.assets && size > assets) { size = st.assets; alert = false;}
-                if (size < assets && size > st.assets) { size = assets; alert = false;}
-                if (size < assets && size < st.assets) { size = effectiveAssets; alert = false;}
+                // if (size < st.assets && size > assets) { size = st.assets; alert = false;}
+                // if (size < assets && size > st.assets) { size = assets; alert = false;}
+                // if (size < assets && size < st.assets) { size = effectiveAssets; alert = false;}
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
             // if (size < minSize) {size = 0; alert = false; }
             // if (size > effectiveAssets) { size = effectiveAssets; }
-            size = size * dir;
+            size = size * -1;
         }
 
-        //Turn off alerts for opposite directions.
-        if (dir > 0 && st.enter < price) { 
-            alert = false; 
-        }
-
-        if (dir < 0 && st.enter > price) { 
-            alert = false; 
-        }
-
-        if (pnl < 0 && dir < 0) {
-            size = 0; 
-            alert = false; 
-        }
+        //Do not sell if in Loss.
+        if (pnl < 0 && dir < 0) { size = 0; alert = false; }
     }
 
     return {size, alert};
