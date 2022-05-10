@@ -44,7 +44,7 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 }
 
 std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
-    double effectiveAssets = std::min(st.assets, assets);
+    double effectiveAssets = std::max(0, std::min(st.assets, assets));
     // double position = st.position;
     double availableCurrency = std::max(0.0, st.currency);
     double cfgInitBet = cfg.initBet;
