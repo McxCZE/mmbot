@@ -188,6 +188,10 @@ double assetsLeft, double currencyLeft) const {
 		effectiveSize = std::max(assetsLeft - st.assets, zero); //0.0 -> 0d
 	}
 
+    if (tradeSize < 0 && st.assets < std::abs(tradeSize)) {
+        effectiveSize = st.assets;
+    }
+
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
     auto newAsset = st.assets + effectiveSize;
