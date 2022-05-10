@@ -197,10 +197,17 @@ double assetsLeft, double currencyLeft) const {
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
     auto newAsset = st.assets + effectiveSize;
+    
+    if (newAsset < 0) {
+        newAsset = 0;
+    }
+
     auto cost = tradePrice * effectiveSize;
 	auto norm_profit = effectiveSize >= 0 ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = effectiveSize >= 0 ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
+
+
 
 	//logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
