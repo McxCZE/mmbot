@@ -130,7 +130,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { 
-                size = effectiveAssets;
+                size = st.assets;
             }
 
             if (size > effectiveAssets) { size = 0; alert = false; }
