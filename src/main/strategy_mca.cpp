@@ -81,8 +81,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         if (distEnter > 1) {distEnter = 1;} // <- Muze byt vetsi jak 100% u hyperSracek. Jak osetrit ?
 
-        double cfgSellStrength = cfg.sellStrength;
-        double cfgBuyStrength = cfg.buyStrength;
+        double cfgSellStrength = cfg.sellStrength; // std::max(0.0, std::min(1.0, cfg.sellStrength))
+        double cfgBuyStrength = cfg.buyStrength; // std::max(0.0, std::min(1.0, cfg.buyStrength))
 
         if (cfgSellStrength == 0 || cfgSellStrength <= 0 || std::isnan(cfgSellStrength)) 
         {cfgSellStrength = 0;}
