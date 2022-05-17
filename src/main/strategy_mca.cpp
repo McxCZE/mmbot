@@ -126,7 +126,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (dir > 0 && st.enter > price) {
             size = assetsToHoldWhenBuying - effectiveAssets;
             if (size < 0) { 
-                size = minSize;
+                // size = minSize;
+                size = 0; // Test Only.
                 // Nakoupi tak ze jde do zaporneho currency.
                 alert = false; 
             }
