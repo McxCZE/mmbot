@@ -113,9 +113,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (sellStrength > 1) {sellStrength = 1;}
         if (std::isnan(sellStrength)) {sellStrength = 0;}
 
-        // Parabola
+        //Decision making process, aka. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
         double assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter
+
+        if (sellStrength == 1) { assetsToHoldWhenSelling = 0; }
 
         // Martingale
         // double assetsToHoldWhenBuying = effectiveAssets * 2;
