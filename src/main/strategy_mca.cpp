@@ -156,8 +156,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             assetsToHoldWhenSelling = 0;
         //Sinusoids.
         } else if (sellStrength == 0) {
-            
-            if (dir < 0 && st.enter < price) {
+
+            if (dir < 0) {
                 size = 0;
                 alert = false;
                 return {size, alert};
