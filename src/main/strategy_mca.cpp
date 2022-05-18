@@ -284,20 +284,18 @@ double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
 	}
 
     // Pridano - Useless..
-    // double minBudgetThreshold = (assets * lastPrice) / st.budget;
-    // double enter = 0;
-    // if (std::isnan(st.enter) ||
-    //  std::isinf(st.enter) ||
-    //  st.enter == 0 ||
-    //  minBudgetThreshold <= 0.01) { 
-    //     enter = lastPrice; 
-    // } else {
-    //     enter = st.enter;
-    // }
+    double minBudgetThreshold = (assets * lastPrice) / st.budget;
+    double enter = 0
+    if (std::isnan(st.enter) || std::isinf(st.enter) || st.enter == 0) { 
+        enter = lastPrice; 
+    } else {
+        enter = st.enter;
+    }
 
-    // double cpEnter = enter;
+    double cp = enter;
     // Konec pridavku.
-    double cp = lastPrice;
+    
+    // double cp = lastPrice;
 
 	logInfo("getCenterPrice: lastPrice=$1, assets=$2 -*> $3", lastPrice, assets, cp);
 	return cp; // cp
