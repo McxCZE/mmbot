@@ -277,7 +277,7 @@ std::string_view Strategy_Mca::getID() const {
 	return id;
 }
 
-double Strategy_Mca::getCenterPrice(double lastPrice, double assets, const IStockApi::MarketInfo &minfo) const {
+double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
 
 	if (!std::isnan(st.last_price) && st.last_price > 0) {
 		lastPrice = st.last_price;
