@@ -113,6 +113,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         if (cfg.sellStrength >= 1) {
             sellStrength = 1;
+        } else if (cfg.sellStrength <= 0) {
+            sellStrength = 0;
         } else {
             sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
         }
