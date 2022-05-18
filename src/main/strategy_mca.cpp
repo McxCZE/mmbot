@@ -141,7 +141,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter              
 
 
-#region Martingale
+        //Region - Martingale
         if (dir > 0 && st.enter > price && martinGale)
         {
             martinGaleSize = effectiveAssets * buyStrength;
@@ -150,7 +150,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             {
                 size = availableCurrency / price;
             }
-            
+
             return {size, alert}; //Escape
         }
 
@@ -159,9 +159,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
             return {size, alert}; //Escape, we do not need to worry about PNL. we never sell.
         }
-#endregion
+        //Endregion
 
-#region MCA
+        //Region - MCA
         if (dir > 0 && st.enter > price) {
 
             size = assetsToHoldWhenBuying - effectiveAssets;
@@ -187,7 +187,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             // if (size > effectiveAssets) { size = effectiveAssets; }
             size = size * -1;
         }
-#endregion
+        //EndRegion
 
         //Do not sell if in Loss.
         if (pnl < 0 && dir < 0) { size = 0; alert = false; }
