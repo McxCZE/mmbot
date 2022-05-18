@@ -45,7 +45,7 @@ public:
 	virtual bool isValid() const;
 	virtual json::Value exportState() const;
 	virtual std::string_view getID() const;
-	virtual double getCenterPrice(double lastPrice, double assets) const;
+	virtual double getCenterPrice(double lastPrice, double assets, const IStockApi::MarketInfo &minfo) const;
 	virtual double calcInitialPosition(const IStockApi::MarketInfo &minfo,
 			double price, double assets, double currency) const;
 	virtual IStrategy::BudgetInfo getBudgetInfo() const;

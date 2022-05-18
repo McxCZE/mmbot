@@ -277,16 +277,18 @@ std::string_view Strategy_Mca::getID() const {
 	return id;
 }
 
-double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
+double Strategy_Mca::getCenterPrice(double lastPrice, double assets, const IStockApi::MarketInfo &minfo) const {
 
 	if (!std::isnan(st.last_price) && st.last_price > 0) {
 		lastPrice = st.last_price;
 	}
 
     // Pridano - Useless..
+    double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
+    double minSize = minSize(minfo, lastPrice);
     double enter = 0;
 
-    if (std::isnan(st.enter) || std::isinf(st.enter) || st.enter == 0) { 
+    if (std::isnan(st.enter) || std::isinf(st.enter) || st.enter == 0 || effectiveAssets < minSize) { 
         enter = lastPrice; 
     } else {
         enter = st.enter;
