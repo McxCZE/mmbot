@@ -284,9 +284,8 @@ double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
 	}
 
     // Pridano - Useless..
-    double minBudgetThreshold = (assets * lastPrice) / st.budget;
     double enter = 0;
-    
+
     if (std::isnan(st.enter) || std::isinf(st.enter) || st.enter == 0) { 
         enter = lastPrice; 
     } else {
