@@ -140,7 +140,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
                 if (size * price > availableCurrency) { 
                     size = availableCurrency / price;
                 }
-                
+
                 return {size, alert};
             }
 
@@ -155,6 +155,14 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
             assetsToHoldWhenSelling = 0;
         //Sinusoids.
+        } else if (sellStrength == 0) {
+            
+            if (dir < 0 && st.enter < price) {
+                size = 0;
+                alert = false;
+                return {size, alert};
+            }
+
         } else {
             assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
             assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter              
