@@ -117,11 +117,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
         }
 
-        if (buyStrength < 0) {buyStrength = 0;}
+        if (buyStrength <= 0) {buyStrength = 0;}
         if (buyStrength > 5) {buyStrength = 5;}
         if (std::isnan(buyStrength)) {buyStrength = 0;}
 
-        if (sellStrength < 0) {sellStrength = 0;}
+        if (sellStrength <= 0) {sellStrength = 0;}
         if (sellStrength > 1) {sellStrength = 1;}
         if (std::isnan(sellStrength)) {sellStrength = 0;}
 
@@ -132,7 +132,13 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //buyStrength == 1 > Clean Martingale.
         if (buyStrength >= 1) {
             assetsToHoldWhenBuying = effectiveAssets * buyStrength; //buyStrength = martingale factor.
-            assetsToHoldWhenSelling = 0;
+
+            if (sellStrength == 1) {
+                assetsToHoldWhenSelling = 0;
+            } else {
+                assetsToHoldWhenSelling = sellStrength;
+            }
+            
         //buyStrength < 1 && sellStrength == 1 > Move on Sinusoid when buying, sell everything.
         } else if (sellStrength == 1) {
             assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
