@@ -91,7 +91,7 @@ public:
 	virtual double calcCurrencyAllocation(double price) const = 0;
 	virtual ~IStrategy() {}
 	virtual ChartPoint calcChart(double price) const = 0;
-	virtual double getCenterPrice(double lastPrice, double assets) const = 0;
+	virtual double getCenterPrice(double lastPrice, double assets, const IStockApi::MarketInfo &minfo) const = 0; //, const IStockApi::MarketInfo &minfo <- Pridano.
 
 
 protected:
