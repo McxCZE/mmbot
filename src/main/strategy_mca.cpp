@@ -153,7 +153,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = assetsToHoldWhenBuying - effectiveAssets;
             if (size < 0) { 
                 size = 0;
-                // Nakoupi tak ze jde do zaporneho currency.
                 alert = false; 
             }
 
