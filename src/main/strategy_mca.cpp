@@ -104,69 +104,66 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Sinusoids - Production release.
         double sellStrength = 0;
         double buyStrength = 0;
+        bool martinGale = false;
+        bool neverSell = false;
 
-        if (cfg.buyStrength >= 1) {
+        if (cfgBuyStrength >= 1) {
             buyStrength = cfg.buyStrength;
+            martinGale = true;
         } else {
             buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
         }
 
-        if (cfg.sellStrength >= 1) {
+        if (cfgSellStrength >= 1) {
             sellStrength = 1;
-        } else if (cfg.sellStrength <= 0) {
+        } else if (cfgSellStrength <= 0) {
             sellStrength = 0;
+            neverSell = true;
         } else {
             sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
         }
 
-        if (buyStrength <= 0) {buyStrength = 0;}
-        if (buyStrength > 5) {buyStrength = 5;}
+        // if (buyStrength <= 0) {buyStrength = 0;}
+        // if (buyStrength > 5) {buyStrength = 5;}
         if (std::isnan(buyStrength)) {buyStrength = 0;}
 
-        if (sellStrength <= 0) {sellStrength = 0;}
-        if (sellStrength > 1) {sellStrength = 1;}
+        // if (sellStrength <= 0) {sellStrength = 0;}
+        // if (sellStrength > 1) {sellStrength = 1;}
         if (std::isnan(sellStrength)) {sellStrength = 0;}
 
         //Decision making process, aka. How much to hold when buying/selling.
-        double martinGale = 0;
+        double martinGaleSize = 0;
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
 
-        //buyStrength == 1 > Clean Martingale.
-        if (buyStrength >= 1) {
-            martinGale = effectiveAssets * buyStrength; //buyStrength = martingale factor.
+        //Sinusoids sizes.
+        assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
+        assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter              
 
-            if (dir > 0 && st.enter > price) {
-                size = martinGale;
-                if (size * price > availableCurrency) { 
-                    size = availableCurrency / price;
-                }
-                return {size, alert};
-            }
 
-            if (sellStrength == 1) {
-                assetsToHoldWhenSelling = 0;
-            } else if (sellStrength == 0) {
-                if (dir < 0) {
-                    size = 0;
-                    alert = false;
-                    return {size, alert};
-                }
-            } else {
-                assetsToHoldWhenSelling = (st.budget * sellStrength) / price;;
+#region Martingale
+        if (dir > 0 && st.enter > price && martinGale)
+        {
+            martinGaleSize = effectiveAssets * buyStrength;
+            size = martinGaleSize;
+            if (size * price > availableCurrency)
+            {
+                size = availableCurrency / price;
             }
             
-        //buyStrength < 1 && sellStrength == 1 > Move on Sinusoid when buying, sell everything.
-        } else if (sellStrength == 1) {
-            assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
-            assetsToHoldWhenSelling = 0;
-        //Sinusoids.
-        } else {
-            assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
-            assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter              
+            return {size, alert}; //Escape
         }
 
+        if (dir < 0 && neverSell) {
+            size = 0;
+
+            return {size, alert}; //Escape, we do not need to worry about PNL. we never sell.
+        }
+#endregion
+
+#region MCA
         if (dir > 0 && st.enter > price) {
+
             size = assetsToHoldWhenBuying - effectiveAssets;
             if (size < 0) { 
                 size = 0;
@@ -190,6 +187,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             // if (size > effectiveAssets) { size = effectiveAssets; }
             size = size * -1;
         }
+#endregion
 
         //Do not sell if in Loss.
         if (pnl < 0 && dir < 0) { size = 0; alert = false; }
