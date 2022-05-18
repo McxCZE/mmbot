@@ -106,6 +106,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double buyStrength = 0;
         bool martinGale = false;
         bool neverSell = false;
+        bool sellEverything = false;
 
         if (cfgBuyStrength >= 1) {
             buyStrength = cfg.buyStrength;
@@ -116,6 +117,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         if (cfgSellStrength >= 1) {
             sellStrength = 1;
+            sellEverything = true;
         } else if (cfgSellStrength <= 0) {
             sellStrength = 0;
             neverSell = true;
@@ -158,6 +160,15 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = 0;
 
             return {size, alert}; //Escape, we do not need to worry about PNL. we never sell.
+        }
+
+        if (dir < 0 && st.enter < price && sellEverything) {
+            size = effectiveAssets;
+            if (size < minSize) { size = 0; }
+
+            size = size * -1;
+            if (pnl < 0 && dir < 0) { size = 0; alert = false; return {size, alert}};
+            return {size, alert};
         }
         //Endregion
 
