@@ -285,7 +285,7 @@ double Strategy_Mca::getCenterPrice(double lastPrice, double assets, const IStoc
 
     // Pridano - Useless..
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
-    double minSize = minSize(minfo, lastPrice);
+    double minSize = (st.budget / lastPrice) * 0.01;
     double enter = 0;
 
     if (std::isnan(st.enter) || std::isinf(st.enter) || st.enter == 0 || effectiveAssets < minSize) { 
