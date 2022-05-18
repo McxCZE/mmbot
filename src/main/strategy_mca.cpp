@@ -102,11 +102,23 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // double buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
 
         //Sinusoids - Production release.
-        double sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
-        double buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
+        double sellStrength = 0;
+        double buyStrength = 0;
+
+        if (cfg.buyStrength >= 1) {
+            buyStrength = cfg.buyStrength;
+        } else {
+            buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
+        }
+
+        if (cfg.sellStrength >= 1) {
+            sellStrength = 1;
+        } else {
+            sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        }
 
         if (buyStrength < 0) {buyStrength = 0;}
-        if (buyStrength > 1) {buyStrength = 1;}
+        if (buyStrength > 5) {buyStrength = 5;}
         if (std::isnan(buyStrength)) {buyStrength = 0;}
 
         if (sellStrength < 0) {sellStrength = 0;}
@@ -114,14 +126,22 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (std::isnan(sellStrength)) {sellStrength = 0;}
 
         //Decision making process, aka. How much to hold when buying/selling.
-        double assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
-        double assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter
+        double assetsToHoldWhenBuying = 0;
+        double assetsToHoldWhenSelling = 0;
 
-        if (sellStrength == 1) { assetsToHoldWhenSelling = 0; }
-
-        // Martingale
-        // double assetsToHoldWhenBuying = effectiveAssets * 2;
-        // double assetsToHoldWhenSelling = 0;
+        //buyStrength == 1 > Clean Martingale.
+        if (buyStrength >= 1) {
+            assetsToHoldWhenBuying = effectiveAssets * buyStrength; //buyStrength = martingale factor.
+            assetsToHoldWhenSelling = 0;
+        //buyStrength < 1 && sellStrength == 1 > Move on Sinusoid when buying, sell everything.
+        } else if (sellStrength == 1) {
+            assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
+            assetsToHoldWhenSelling = 0;
+        //Sinusoids.
+        } else {
+            assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
+            assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter              
+        }
 
         if (dir > 0 && st.enter > price) {
             size = assetsToHoldWhenBuying - effectiveAssets;
@@ -136,8 +156,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             }
 
             if (size < minSize) {size = 0;}
-
-            // <- Sem if, pokud je asset * price > budget, a je vygenerovany nakupni prikaz = Alert. Dosli prachy.
         }
 
         if (dir < 0 && st.enter < price) {
