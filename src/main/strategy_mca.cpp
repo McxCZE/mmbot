@@ -126,12 +126,18 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (std::isnan(sellStrength)) {sellStrength = 0;}
 
         //Decision making process, aka. How much to hold when buying/selling.
+        double martinGale = 0;
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
 
         //buyStrength == 1 > Clean Martingale.
         if (buyStrength >= 1) {
-            assetsToHoldWhenBuying = effectiveAssets * buyStrength; //buyStrength = martingale factor.
+            martinGale = effectiveAssets * buyStrength; //buyStrength = martingale factor.
+
+            if (dir > 0 && st.enter > price) {
+                size = martinGale;
+                return {size, alert};
+            }
 
             if (sellStrength == 1) {
                 assetsToHoldWhenSelling = 0;
