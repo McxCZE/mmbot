@@ -136,18 +136,22 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
             if (dir > 0 && st.enter > price) {
                 size = martinGale;
-
                 if (size * price > availableCurrency) { 
                     size = availableCurrency / price;
                 }
-
                 return {size, alert};
             }
 
             if (sellStrength == 1) {
                 assetsToHoldWhenSelling = 0;
+            } else if (sellStrength == 0) {
+                if (dir < 0) {
+                    size = 0;
+                    alert = false;
+                    return {size, alert};
+                }
             } else {
-                assetsToHoldWhenSelling = sellStrength;
+                assetsToHoldWhenSelling = (st.budget * sellStrength) / price;;
             }
             
         //buyStrength < 1 && sellStrength == 1 > Move on Sinusoid when buying, sell everything.
@@ -155,14 +159,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
             assetsToHoldWhenSelling = 0;
         //Sinusoids.
-        } else if (sellStrength == 0) {
-
-            if (dir < 0) {
-                size = 0;
-                alert = false;
-                return {size, alert};
-            }
-
         } else {
             assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
             assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter              
