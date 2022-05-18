@@ -167,7 +167,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             if (size < minSize) { size = 0; }
 
             size = size * -1;
-            if (pnl < 0 && dir < 0) { size = 0; alert = false; return {size, alert}};
+            if (pnl < 0 && dir < 0) { size = 0; alert = false; return {size, alert}; };
             return {size, alert};
         }
         //Endregion
