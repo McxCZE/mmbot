@@ -1,0 +1,110 @@
+#pragma once
+
+#include <cstring>
+#include "shared/constref.h"
+#include "shared/stringview.h"
+
+namespace simpleServer {
+
+
+
+using ondra_shared::const_ref;
+using ondra_shared::StrViewA;
+
+extern const char *urlEncode_validChards;
+
+template<typename Fn>
+class UrlEncode {
+public:
+	UrlEncode(Fn && fn):fn(std::forward<Fn>(fn)) {}
+
+	void operator()(char item) const {
+		//char validchrs =
+		if (std::strchr(urlEncode_validChards, item) == 0) {
+			fn('%');
+			unsigned char h = ((unsigned char )item)/16;
+			fn(h<10?'0'+h:'A'+h-10);
+			unsigned char l = ((unsigned char )item)%16;
+			fn(l<10?'0'+l:'A'+l-10);
+		} else {
+			fn(item);
+		}
+	}
+	void operator()(const std::string_view &str) const {
+		for (const auto &c: str) (*this)(c);
+	}
+protected:
+	Fn fn;
+
+};
+
+template<typename Fn>
+class UrlDecode {
+public:
+
+	UrlDecode(Fn &&fn):fn(std::forward<Fn>(fn)),acc(0) {}
+
+	void operator()(char item) const {
+
+		if (item == '%') {
+			phase = 1;
+			acc = 0;
+		} else if (phase) {
+			if (item >= '0' && item <= '9') acc = acc * 16 + (item - '0');
+			else if (item >= 'A' && item <= 'F') acc = acc * 16 + (item - 'A'+10);
+			else if (item >= 'a' && item <= 'f') acc = acc * 16 + (item - 'a'+10);
+			phase++;
+			if (phase==3) {
+				phase = 0;
+				fn(acc);
+			}
+		} else {
+			fn(item);
+		}
+
+	}
+	void operator()(const std::string_view &str) const {
+		for (const auto &c: str) (*this)(c);
+	}
+
+protected:
+	Fn fn;
+	mutable unsigned char acc;
+	mutable unsigned char phase = 0;
+
+};
+
+template<typename WriteFn>
+auto urlEncoder(WriteFn &&fn) {
+	return UrlEncode<WriteFn>(std::forward<WriteFn>(fn));
+}
+template<typename ReadFn>
+auto urlDecoder(ReadFn &&fn) {
+	return UrlEncode<ReadFn>(std::forward<ReadFn>(fn));
+}
+
+template<typename Container>
+std::string urlDecode(const Container &container) {
+	std::string res;
+	auto wrfn = [&](char c) {res.push_back(c);};
+	UrlDecode<decltype(wrfn)> decoder(std::move(wrfn));
+	for (auto &&x : container) {
+		decoder(x);
+	}
+	return res;
+}
+
+template<typename Container>
+std::string urlEncode(const Container &container) {
+	std::string res;
+	auto wrfn = [&](char c) {res.push_back(c);};
+	UrlEncode<decltype(wrfn)> encoder(std::move(wrfn));
+	for (auto &&x : container) {
+		encoder(x);
+	}
+	return res;
+}
+
+
+
+}
