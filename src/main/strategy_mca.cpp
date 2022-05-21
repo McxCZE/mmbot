@@ -67,7 +67,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     bool emergencyBreak = false;
 
     //Emergency Bailout
-    if (st.ebPriceEnter != 0) {
+    if (st.ebPriceEnter != 0 && st.ebPriceEnter > price) {
         emergencyBreak = true;
     }
 
