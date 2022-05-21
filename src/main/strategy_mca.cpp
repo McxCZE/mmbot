@@ -115,7 +115,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             buyStrength = cfg.buyStrength;
             martinGale = true;
         } else if (availableCurrency < st.budget * 0.7) {
-            buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - 0.04, 4);
+            buyStrength = distEnter;
+            // buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - 0.04, 4);
             emergencyBreak = true;
         } else {
             buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
