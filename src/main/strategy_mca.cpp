@@ -67,7 +67,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     bool emergencyBreak = false;
 
     //Emergency Bailout
-    if (st.ebPriceEnter != 0 && st.ebPriceEnter > price) {
+    if (st.ebPriceEnter != 0) {
         emergencyBreak = true;
     }
 
@@ -120,9 +120,14 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             buyStrength = cfg.buyStrength;
             martinGale = true;
         } else if (emergencyBreak) {
-            distEbPrice = st.ebPriceEnter - price / st.ebPriceEnter;
-            buyStrength = std::sin(std::pow(distEbPrice, 2) * (M_PI / 2));
+            
+            if (st.ebPrice > price) {
+                distEbPrice = st.ebPriceEnter - price / st.ebPriceEnter;
+            } else {
+                distEbPrice = 0;
+            }
 
+            buyStrength = std::sin(std::pow(distEbPrice, 2) * (M_PI / 2));
             emergencyBreak = true;
         } else {
             buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
