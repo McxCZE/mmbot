@@ -293,18 +293,19 @@ double assetsLeft, double currencyLeft) const {
     }
 
     double gridSize = 10; //st.GridSize;
+    double gridStep = 0;
     double gridDepth = 0;
 
     if (ebPriceEnter != 0) {
         gridStep = st.ebPriceEnter / gridSize; // order realization step.
-        int i = 0;
+        double i = 0;
         do {
             if (price < price - (gridStep * i)) {
                 gridDepth = i;
                 break;
             }
-            i = i + i;
-        } while (i <= gridSize)
+            i = i + 1;
+        } while (i <= gridSize);
 
     }
 
