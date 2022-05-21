@@ -123,7 +123,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             gridStep = st.ebPriceEnter / gridSize; //order realization step.
             double sizeStep = (availableCurrency / gridSize) / price; //order size step.
 
-            if (price < st.ebPriceEnter - (gridStep * st.gridDepth)) {
+            if (price < st.ebPriceEnter - (gridStep * (st.gridDepth + 1))) {
                 size = sizeStep;
             }
 
@@ -294,11 +294,12 @@ double assetsLeft, double currencyLeft) const {
 
     double gridSize = 10; //st.GridSize;
     double gridStep = 0;
-    double gridDepth = 0;
+    int gridDepth = 0;
 
     if (ebPriceEnter != 0) {
         gridStep = st.ebPriceEnter / gridSize; // order realization step.
-        double i = gridSize;
+        
+        int i = gridSize;
         do {
             if (tradePrice < st.ebPriceEnter - (gridStep * i)) {
                 gridDepth = i;
