@@ -56,8 +56,10 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double distEnter = 0;
     double gridStep = 0;
     double gridSize = 10;
-
     double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
+    double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
+    double emergencyBudgetToHold = st.budget * emergencyThreshold;
+
     bool martinGale = false;
     bool neverSell = false;
     bool sellEverything = false;
@@ -209,6 +211,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
                 size = availableCurrency / price;
             }
 
+            double currencyLeftAfterBuy = (size * price) - availableCurrency;
+            
+            if (currencyLeftAfterBuy < emergencyBudgetToHold) {
+                size = 0;
+            }
+
             if (size < minSize) {size = 0;}
         }
 
@@ -270,9 +278,12 @@ double assetsLeft, double currencyLeft) const {
         newAsset = 0;
     }
 
+    double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
+    double emergencyBudgetToHold = st.budget * emergencyThreshold;
+
     double ebPriceEnter = 0;
 
-    if (availableCurrency < st.budget * 0.7) {
+    if (availableCurrency < emergencyBudgetToHold) {
         ebPriceEnter = tradePrice;
     } else {
         ebPriceEnter = 0;
