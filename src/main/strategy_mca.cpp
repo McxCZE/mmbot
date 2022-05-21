@@ -53,6 +53,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
     double sellStrength = 0;
     double buyStrength = 0;
+
     double distEnter = 0;
     double distEbPrice = 0;
 
@@ -119,21 +120,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             buyStrength = cfg.buyStrength;
             martinGale = true;
         } else if (emergencyBreak) {
-            //Grid Decision.
-            // gridStep = st.ebPriceEnter / gridSize; //order realization step.
-            // double sizeStep = (availableCurrency / gridSize) / price; //order size step.
-
-            // if (price < st.ebPriceEnter - (gridStep * (st.gridDepth + 1))) {
-            //     size = sizeStep;
-            // }
-
-            // if (st.ebPriceEnter - gridStep > price - gridStep) {
-            //     size = 0;
-            // }
             distEbPrice = st.ebPriceEnter - price / st.ebPriceEnter;
-
             buyStrength = std::sin(std::pow(distEbPrice, 2) * (M_PI / 2));
-            size = availableCurrency * buyStrength;
 
             emergencyBreak = true;
         } else {
@@ -195,11 +183,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Region - MCA
         if (dir > 0 && st.enter > price) {
 
-            if (emergencyBreak) {
-                size = size;
-            } else {
-                size = assetsToHoldWhenBuying - effectiveAssets;
-            }
+            size = assetsToHoldWhenBuying - effectiveAssets;
 
             if (size < 0) { 
                 size = 0;
