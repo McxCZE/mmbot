@@ -55,7 +55,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double buyStrength = 0;
     double distEnter = 0;
     double gridStep = 0;
-    double gridSize = 10; // st.gridSize
+    double gridSize = 40; // st.gridSize
     double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
     double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
     double emergencyBudgetToHold = st.budget * emergencyThreshold;
@@ -292,7 +292,7 @@ double assetsLeft, double currencyLeft) const {
         ebPriceEnter = 0;
     }
 
-    double gridSize = 10; //st.GridSize;
+    double gridSize = 40; //st.GridSize;
     double gridStep = 0;
     int gridDepth = st.gridDepth;
     int newGridDepth = 0;
