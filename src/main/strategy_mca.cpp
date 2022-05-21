@@ -10,6 +10,7 @@
 
 #include <cmath>
 
+
 #include "sgn.h"
 #include "../shared/logOutput.h"
 using ondra_shared::logInfo;
