@@ -55,6 +55,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double buyStrength = 0;
     double distEnter = 0;
     double distEbPrice = 0;
+
     double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
     double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
     double emergencyBudgetToHold = st.budget * emergencyThreshold;
@@ -279,22 +280,26 @@ double assetsLeft, double currencyLeft) const {
         newAsset = 0;
     }
 
-    double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
+    double emergencyThreshold = 1 - 0.7; //cfg.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
     double emergencyBudgetToHold = st.budget * emergencyThreshold;
-
     double ebPriceEnter = 0;
 
-    if (availableCurrency < emergencyBudgetToHold) {
-        ebPriceEnter = tradePrice;
+    if (st.ebPriceEnter == 0) {
+        if (availableCurrency < emergencyBudgetToHold) {
+            ebPriceEnter = tradePrice;
+        }       
     } else {
-        ebPriceEnter = 0;
+        if (avilableCurrency > emergencyBudgetToHold) {
+            ebPriceEnter = 0;
+        } else {
+            ebPriceEnter = st.ebPriceEnter;
+        }
     }
 
     auto cost = tradePrice * effectiveSize;
 	auto norm_profit = effectiveSize >= 0 ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = effectiveSize >= 0 ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
-
 
 	//logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
