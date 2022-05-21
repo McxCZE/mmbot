@@ -120,8 +120,14 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             //Grid decision making.
             gridStep = st.ebPriceEnter / gridSize; 
 
+
+            //Static test.
             if (price < st.ebPriceEnter - gridStep) {
                 size = (availableCurrency / 10) / price;
+            }
+
+            if (st.ebPriceEnter - gridStep > price - gridStep) {
+                size = 0;
             }
 
             // buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
