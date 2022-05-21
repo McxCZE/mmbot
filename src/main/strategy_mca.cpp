@@ -64,9 +64,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     bool emergencyBreak = false;
 
     //Emergency Bailout
-    // if (effectiveAssets < 0 || availableCurrency < 0 || assets < 0 || st.assets < 0 || st.budget < 0) {
-    //     return {size, alert};
-    // }
+    if (st.ebPriceEnter != 0) {
+        emergencyBreak = true;
+    }
 
     if (cfgInitBet < 0) {cfgInitBet = 0;}
     if (cfgInitBet > 100) {cfgInitBet = 100;}
@@ -116,19 +116,18 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (cfgBuyStrength >= 1) {
             buyStrength = cfg.buyStrength;
             martinGale = true;
-        } else if (availableCurrency < st.budget * 0.7) {
+        } else if (emergencyBreak) {
             //Grid decision making.
             gridStep = st.ebPriceEnter / gridSize; 
 
-
             //Static test.
             if (price < st.ebPriceEnter - gridStep) {
-                size = (availableCurrency / 10) / price;
+                size = (availableCurrency / gridSize) / price;
             }
 
-            if (st.ebPriceEnter - gridStep > price - gridStep) {
-                size = 0;
-            }
+            // if (st.ebPriceEnter - gridStep > price - gridStep) {
+            //     size = 0;
+            // }
 
             // buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
             // if (buyStrength > 0.2) { //20% distance.
