@@ -294,21 +294,27 @@ double assetsLeft, double currencyLeft) const {
 
     double gridSize = 10; //st.GridSize;
     double gridStep = 0;
-    int gridDepth = 0;
+    int gridDepth = st.gridDepth;
+    ïnt newGridDepth = 0;
 
     if (ebPriceEnter != 0) {
         gridStep = st.ebPriceEnter / gridSize; // order realization step.
-        
         int i = gridSize;
+
         do {
             if (tradePrice < st.ebPriceEnter - (gridStep * i)) {
-                gridDepth = i;
+                newGridDepth = i;
                 break;
             }
             i = i - 1;
         } while (i >= 0);
 
+        if (newGridDepth > gridDepth) {
+            gridDepth = newGridDepth;
+        }
     }
+
+    if (ebPriceEnter == 0) { gridDepth = 0; }
 
 
     auto cost = tradePrice * effectiveSize;
