@@ -301,7 +301,8 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["budget"].getNumber(),
 			src["assets"].getNumber(),
 			src["currency"].getNumber(),
-			src["last_price"].getNumber()
+			src["last_price"].getNumber(),
+            src["ebPriceEnter"].getNumber()
 	};
 	return new Strategy_Mca(cfg, std::move(st));
 }
@@ -329,6 +330,7 @@ json::Value Strategy_Mca::exportState() const {
 		{"assets", st.assets},
 		{"currency", st.currency},
 		{"last_price", st.last_price},
+        {"ebPriceEnter", st.ebPriceEnter}
 	};
 }
 
@@ -416,6 +418,7 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 	return json::Object{
 		{"Enter price sum", st.ep},
 		{"Enter price", st.enter},
+        {"Emergency price grid start", st.ebPriceEnter}
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency}
