@@ -418,7 +418,7 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 	return json::Object{
 		{"Enter price sum", st.ep},
 		{"Enter price", st.enter},
-        {"Emergency price grid start", st.ebPriceEnter}
+        {"Emergency price grid start", st.ebPriceEnter},
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency}
