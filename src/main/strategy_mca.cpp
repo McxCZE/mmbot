@@ -54,6 +54,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
+    double distEbPrice = 0;
     double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
     double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
     double emergencyBudgetToHold = st.budget * emergencyThreshold;
