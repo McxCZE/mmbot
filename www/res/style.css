@@ -37,6 +37,7 @@ a {
 }
 #logfilearea{
 	position:relative;
+	margin-top:25px;
 }
 #logfileactivate {
 	text-align: center;
@@ -156,7 +157,7 @@ select > option[disabled] {
 
 x-table {
 	display:block;
-	max-width:20cm;
+	max-width:80%;
 	margin:auto;	
 	position: relative;
 }

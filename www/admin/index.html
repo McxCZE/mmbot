@@ -96,6 +96,7 @@
 <option value="sinh_val">Volume based Sinh (legacy)</option>
 </optgroup>
 <optgroup label="Experimental">
+<option value="mathematical_cost_averaging">Mathematical Cost Averaging</option>
 <option value="passive_income">Passive Income</option>
 </optgroup>
 <optgroup label="Utility">
@@ -108,6 +109,7 @@
 </optgroup>
 </select></label>
 <div class="label strategygoal"><span>Startegy Goal:</span><div data-name="help_goal">
+<div class="mathematical_cost_averaging">Define buy/sell strength, based on very simple <a href="https://www.desmos.com/calculator/n2e3ce1yao" target="_blank">equation</a>. Where b represents buy curve, and s represents sell curve. Curves themselves mean, how much asset to hold (y) at given distance from enter price (x).</div>
 <div class="plfrompos">A simple strategy for trading on leveraged stock exchanges and futures, generally on stock exchanges with the ability to open long or short positions. This strategy is the only one that works well with a negative value in "assets" (meaning position)</div>
 <div class="halfhalf">This strategy keeps the value of assets and money on the stock exchange in a ratio 1:1. Whenever this ratio is disrupted, the strategy executes a trade in such a volume to achieve the defined ratio. <a href="https://www.desmos.com/calculator/9fdvux8fms">Interactive graph</a></div>
 <div class="keepvalue">This strategy keeps the value of assets on the stock exchange at the same value. If the value of assets falls or rises (due to changing price), the strategy executes a trade in such a volume to achieve the same value of the assets as before.</div>
@@ -150,6 +152,18 @@ fixed constant. The robot is forced to buy assets, but if the price of assets ri
 sell part of the assets and use the currency to buy assets at a better price. It is also possible
 to enter a negative value and then the value of the assets held will decrease and allow slower but more efficient sales.</span></span>
 <input type="number" step="any" data-name="kv_valinc"></label>
+<x-section>
+<div class="label"><span>Min price:</span><span data-name="range_min_price">---</span></div>
+<div class="label"><span>Max price:</span><span data-name="range_max_price">---</span></div>
+<div class="label"><span>Recomended initial position:</span><span data-name="range_initial">---</span></div>
+</x-section>
+<div class="rightinfo"><button name="show_backtest" disabled="disabled">Backtest</button></div>
+</x-section>
+
+<x-section data-name="strategy_mca" class="goal" hidden="hidden"><x-section-caption>Mathematical Cost Averaging</x-section-caption>
+<label><span>Buy Strength<span class="tooltip">Increase = more aggressive.</span></span><x-slider data-name="buyStrength" data-min="0.001" data-max="0.999" data-mult="0.001" data-fixed="3"></label>
+<label><span>Sell Strength<span class="tooltip">Increase = more aggressive.</span></span><x-slider data-name="sellStrength" data-min="0.001" data-max="0.999" data-mult="0.001" data-fixed="3"></label>
+<label><span>Initial % of budget to bet<span class="tooltip">After all assets has been sold, new order is not minimal size, but % of budget. (0 = disabled)</span></span><x-slider data-name="initBet" data-min="0" data-max="100" data-mult="0.1" data-fixed="1"></label>
 <x-section>
 <div class="label"><span>Min price:</span><span data-name="range_min_price">---</span></div>
 <div class="label"><span>Max price:</span><span data-name="range_max_price">---</span></div>

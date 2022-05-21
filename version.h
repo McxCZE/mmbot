@@ -1,2 +1,2 @@
 #define MMBOT_VERSION \
- "2.22.2-27-g3f41133"
+ "1.00.00 - McxCZE - Fork"

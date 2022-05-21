@@ -67,8 +67,6 @@ public:
 	Strategy_Gamma(Strategy_Gamma &&other);
 
 
-
-
 	virtual IStrategy::OrderData getNewOrder(const IStockApi::MarketInfo &minfo,
 			double cur_price, double new_price, double dir, double assets,
 			double currency, bool rej) const override;
