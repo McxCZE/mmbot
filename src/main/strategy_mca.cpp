@@ -54,6 +54,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
+    double gridStep = 0;
+    double gridSize = 10;
+
     double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
     bool martinGale = false;
     bool neverSell = false;
@@ -114,7 +117,17 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             buyStrength = cfg.buyStrength;
             martinGale = true;
         } else if (availableCurrency < st.budget * 0.7) {
-            buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
+            //Grid decision making.
+            gridStep = st.enter / gridSize; 
+
+            if (price < st.enter - gridStep) {
+                size = (availableCurrency / 10) / price;
+            }
+
+            // buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
+            // if (buyStrength > 0.2) { //20% distance.
+            //     size = availableCurrency * buyStrength;
+            // }
             // buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - 0.04, 4);
             emergencyBreak = true;
         } else {
@@ -176,7 +189,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Region - MCA
         if (dir > 0 && st.enter > price) {
 
-            size = assetsToHoldWhenBuying - effectiveAssets;
+            if (emergencyBreak) {
+                size = size;
+            } else {
+                size = assetsToHoldWhenBuying - effectiveAssets;
+            }
+            
             if (size < 0) { 
                 size = 0;
                 alert = false; 
