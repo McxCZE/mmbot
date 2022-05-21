@@ -214,7 +214,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             double currencyLeftAfterBuy = availableCurrency - (size * price);
 
             if (currencyLeftAfterBuy < emergencyBudgetToHold) {
-                size = 0;
+                double percIncrease = 0.001;
+
+                do {
+                    size = (availableCurrency * percIncrease) / price;
+                    percIncrease = percIncrease + 0.001;
+                } while ( size < minSize );
             }
 
             if (size < minSize) {size = 0;}
