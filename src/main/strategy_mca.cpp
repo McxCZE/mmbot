@@ -120,8 +120,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             buyStrength = cfg.buyStrength;
             martinGale = true;
         } else if (emergencyBreak) {
-            
-            if (st.ebPrice > price) {
+
+            if (st.ebPriceEnter > price) {
                 distEbPrice = st.ebPriceEnter - price / st.ebPriceEnter;
             } else {
                 distEbPrice = 0;
