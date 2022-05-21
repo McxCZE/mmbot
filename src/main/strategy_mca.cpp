@@ -295,7 +295,7 @@ double assetsLeft, double currencyLeft) const {
     double gridSize = 10; //st.GridSize;
     double gridStep = 0;
     int gridDepth = st.gridDepth;
-    ïnt newGridDepth = 0;
+    int newGridDepth = 0;
 
     if (ebPriceEnter != 0) {
         gridStep = st.ebPriceEnter / gridSize; // order realization step.
