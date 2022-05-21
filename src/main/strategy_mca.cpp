@@ -267,7 +267,7 @@ double assetsLeft, double currencyLeft) const {
 
     double ebPriceEnter = 0;
 
-    if (avilableCurrency < st.budget * 0.7) {
+    if (availableCurrency < st.budget * 0.7) {
         ebPriceEnter = tradePrice;
     } else {
         ebPriceEnter = 0;
