@@ -118,9 +118,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             martinGale = true;
         } else if (availableCurrency < st.budget * 0.7) {
             //Grid decision making.
-            gridStep = st.enter / gridSize; 
+            gridStep = st.ebPriceEnter / gridSize; 
 
-            if (price < st.enter - gridStep) {
+            if (price < st.ebPriceEnter - gridStep) {
                 size = (availableCurrency / 10) / price;
             }
 
