@@ -10,7 +10,6 @@
 
 #include <cmath>
 
-
 #include "sgn.h"
 #include "../shared/logOutput.h"
 using ondra_shared::logInfo;
@@ -52,6 +51,13 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 	double size = 0;
     bool alert = true;
 
+    double sellStrength = 0;
+    double buyStrength = 0;
+    bool martinGale = false;
+    bool neverSell = false;
+    bool sellEverything = false;
+    bool emergencyBreak = false;
+
     //Emergency Bailout
     // if (effectiveAssets < 0 || availableCurrency < 0 || assets < 0 || st.assets < 0 || st.budget < 0) {
     //     return {size, alert};
@@ -65,10 +71,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
 	if (std::isnan(st.enter) || std::isinf(st.enter) || effectiveAssets < minSize) {
         size = minSize;
-        if (initialBet > minSize) {size = initialBet;}
+
+        if (initialBet > minSize) { size = initialBet; }
         if (dir < 0) { size = 0; }
 	} else {
-         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
+        //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if (dir > 0 && st.enter < price) { size = 0; alert = false; return {size, alert};}
         if (dir < 0 && st.enter > price) { size = 0; alert = false; return {size, alert};}
 
@@ -102,15 +109,14 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // double buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
 
         //Sinusoids - Production release.
-        double sellStrength = 0;
-        double buyStrength = 0;
-        bool martinGale = false;
-        bool neverSell = false;
-        bool sellEverything = false;
 
+        //MartinGale - OrderSize calc
         if (cfgBuyStrength >= 1) {
             buyStrength = cfg.buyStrength;
             martinGale = true;
+        } else if (availableCurrency < st.budget * 0.7) {
+            buyStrength = std::pow(distEnter, 2);
+            emergencyBreak = true;
         } else {
             buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
         }
@@ -125,12 +131,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
         }
 
-        // if (buyStrength <= 0) {buyStrength = 0;}
-        // if (buyStrength > 5) {buyStrength = 5;}
         if (std::isnan(buyStrength)) {buyStrength = 0;}
-
-        // if (sellStrength <= 0) {sellStrength = 0;}
-        // if (sellStrength > 1) {sellStrength = 1;}
         if (std::isnan(sellStrength)) {sellStrength = 0;}
 
         //Decision making process, aka. How much to hold when buying/selling.
