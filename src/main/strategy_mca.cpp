@@ -108,6 +108,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (cfgBuyStrength >= 1) {
             buyStrength = cfg.buyStrength;
             martinGale = true;
+        } else if (cfgBuyStrength == 0) {
+            buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
         } else {
             buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
         }
@@ -233,7 +235,6 @@ double assetsLeft, double currencyLeft) const {
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
     auto newAsset = st.assets + effectiveSize;
-    double availableCurrency = std::max(0.0, st.currency);
 
     if (newAsset < 0) {
         newAsset = 0;
