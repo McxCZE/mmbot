@@ -289,7 +289,7 @@ double assetsLeft, double currencyLeft) const {
             ebPriceEnter = tradePrice;
         }       
     } else {
-        if (avilableCurrency > emergencyBudgetToHold) {
+        if (availableCurrency > emergencyBudgetToHold) {
             ebPriceEnter = 0;
         } else {
             ebPriceEnter = st.ebPriceEnter;
