@@ -120,22 +120,21 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             martinGale = true;
         } else if (emergencyBreak) {
             //Grid Decision.
-            gridStep = st.ebPriceEnter / gridSize; //order realization step.
-            double sizeStep = (availableCurrency / gridSize) / price; //order size step.
+            // gridStep = st.ebPriceEnter / gridSize; //order realization step.
+            // double sizeStep = (availableCurrency / gridSize) / price; //order size step.
 
-            if (price < st.ebPriceEnter - (gridStep * (st.gridDepth + 1))) {
-                size = sizeStep;
-            }
+            // if (price < st.ebPriceEnter - (gridStep * (st.gridDepth + 1))) {
+            //     size = sizeStep;
+            // }
 
             // if (st.ebPriceEnter - gridStep > price - gridStep) {
             //     size = 0;
             // }
+            distEbPrice = st.ebPriceEnter - price / st.ebPriceEnter;
 
-            // buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
-            // if (buyStrength > 0.2) { //20% distance.
-            //     size = availableCurrency * buyStrength;
-            // }
-            // buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - 0.04, 4);
+            buyStrength = std::sin(std::pow(distEbPrice, 2) * (M_PI / 2));
+            size = availableCurrency * buyStrength;
+
             emergencyBreak = true;
         } else {
             buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
@@ -292,31 +291,6 @@ double assetsLeft, double currencyLeft) const {
         ebPriceEnter = 0;
     }
 
-    double gridSize = 40; //st.GridSize;
-    double gridStep = 0;
-    int gridDepth = st.gridDepth;
-    int newGridDepth = 0;
-
-    if (ebPriceEnter != 0) {
-        gridStep = st.ebPriceEnter / gridSize; // order realization step.
-        int i = gridSize;
-
-        do {
-            if (tradePrice < st.ebPriceEnter - (gridStep * i)) {
-                newGridDepth = i;
-                break;
-            }
-            i = i - 1;
-        } while (i >= 0);
-
-        if (newGridDepth > gridDepth) {
-            gridDepth = newGridDepth;
-        }
-    }
-
-    if (ebPriceEnter == 0) { gridDepth = 0; }
-
-
     auto cost = tradePrice * effectiveSize;
 	auto norm_profit = effectiveSize >= 0 ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = effectiveSize >= 0 ? st.ep + cost : (st.ep / st.assets) * newAsset;
@@ -341,7 +315,6 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["currency"].getNumber(),
 			src["last_price"].getNumber(),
             src["ebPriceEnter"].getNumber(),
-            src["gridDepth"].getNumber()
 	};
 	return new Strategy_Mca(cfg, std::move(st));
 }
@@ -370,7 +343,6 @@ json::Value Strategy_Mca::exportState() const {
 		{"currency", st.currency},
 		{"last_price", st.last_price},
         {"ebPriceEnter", st.ebPriceEnter},
-        {"gridDepth", st.gridDepth}
 	};
 }
 
@@ -459,7 +431,6 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Enter price sum", st.ep},
 		{"Enter price", st.enter},
         {"Emergency price grid start", st.ebPriceEnter},
-        {"Grid Depth", st.gridDepth},
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency}
