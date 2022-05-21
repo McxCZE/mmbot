@@ -22,8 +22,6 @@ public:
 		double assets = 0;
 		double currency = 0;
 		double last_price = 0;
-		double ebPriceEnter = 0;
-		int gridDepth = 0;
 	};
 
 	Strategy_Mca(const Config &cfg);

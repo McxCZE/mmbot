@@ -53,23 +53,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
     double sellStrength = 0;
     double buyStrength = 0;
-
     double distEnter = 0;
-    double distEbPrice = 0;
-
     double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
-    double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
-    double emergencyBudgetToHold = st.budget * emergencyThreshold;
 
     bool martinGale = false;
     bool neverSell = false;
     bool sellEverything = false;
-    bool emergencyBreak = false;
-
-    //Emergency Bailout
-    if (st.ebPriceEnter != 0) {
-        emergencyBreak = true;
-    }
 
     if (cfgInitBet < 0) {cfgInitBet = 0;}
     if (cfgInitBet > 100) {cfgInitBet = 100;}
@@ -119,16 +108,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (cfgBuyStrength >= 1) {
             buyStrength = cfg.buyStrength;
             martinGale = true;
-        } else if (emergencyBreak) {
-
-            if (st.ebPriceEnter > price) {
-                distEbPrice = st.ebPriceEnter - price / st.ebPriceEnter;
-            } else {
-                distEbPrice = 0;
-            }
-
-            buyStrength = std::sin(std::pow(distEbPrice, 2) * (M_PI / 2));
-            emergencyBreak = true;
         } else {
             buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
         }
@@ -199,15 +178,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
                 size = availableCurrency / price;
             }
 
-            if ((availableCurrency - (size * price)) < emergencyBudgetToHold && emergencyBreak == false) {
-
-                size = (availableCurrency * 0.01) / price;
-
-                if (size < minSize) {
-                    size = minSize;
-                }
-            }
-
             if (size < minSize) {size = 0;}
         }
 
@@ -269,22 +239,6 @@ double assetsLeft, double currencyLeft) const {
         newAsset = 0;
     }
 
-    double emergencyThreshold = 1 - 0.7; //cfg.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
-    double emergencyBudgetToHold = st.budget * emergencyThreshold;
-    double ebPriceEnter = 0;
-
-    if (st.ebPriceEnter == 0) {
-        if (availableCurrency < emergencyBudgetToHold) {
-            ebPriceEnter = tradePrice;
-        }       
-    } else {
-        if (availableCurrency > emergencyBudgetToHold) {
-            ebPriceEnter = 0;
-        } else {
-            ebPriceEnter = st.ebPriceEnter;
-        }
-    }
-
     auto cost = tradePrice * effectiveSize;
 	auto norm_profit = effectiveSize >= 0 ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = effectiveSize >= 0 ? st.ep + cost : (st.ep / st.assets) * newAsset;
@@ -295,7 +249,7 @@ double assetsLeft, double currencyLeft) const {
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, ebPriceEnter })) //ebPriceEnter
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice }))
 	};
 }
 
@@ -306,8 +260,7 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["budget"].getNumber(),
 			src["assets"].getNumber(),
 			src["currency"].getNumber(),
-			src["last_price"].getNumber(),
-            src["ebPriceEnter"].getNumber(),
+			src["last_price"].getNumber()
 	};
 	return new Strategy_Mca(cfg, std::move(st));
 }
@@ -334,8 +287,7 @@ json::Value Strategy_Mca::exportState() const {
 		{"budget", st.budget},
 		{"assets", st.assets},
 		{"currency", st.currency},
-		{"last_price", st.last_price},
-        {"ebPriceEnter", st.ebPriceEnter},
+		{"last_price", st.last_price}
 	};
 }
 
@@ -423,7 +375,6 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 	return json::Object{
 		{"Enter price sum", st.ep},
 		{"Enter price", st.enter},
-        {"Emergency price grid start", st.ebPriceEnter},
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency}
