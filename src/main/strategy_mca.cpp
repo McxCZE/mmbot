@@ -54,8 +54,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
-    double gridStep = 0;
-    double gridSize = 40; // st.gridSize
     double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
     double emergencyThreshold = 1 - 0.7; //st.emergencyThreshold / 100 > budu nastavovat v budoucnu v procentech. 
     double emergencyBudgetToHold = st.budget * emergencyThreshold;
@@ -302,7 +300,7 @@ double assetsLeft, double currencyLeft) const {
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, ebPriceEnter, gridDepth })) //ebPriceEnter
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, ebPriceEnter })) //ebPriceEnter
 	};
 }
 
