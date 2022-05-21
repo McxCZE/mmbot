@@ -53,6 +53,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
     double sellStrength = 0;
     double buyStrength = 0;
+    double distEnter = 0;
+    double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
     bool martinGale = false;
     bool neverSell = false;
     bool sellEverything = false;
@@ -78,9 +80,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if (dir > 0 && st.enter < price) { size = 0; alert = false; return {size, alert};}
         if (dir < 0 && st.enter > price) { size = 0; alert = false; return {size, alert};}
-
-        double distEnter = 0;
-        double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter);        
 
         //Enter price distance, calculation
         if (st.enter > price) { distEnter = (st.enter - price) / st.enter; }
@@ -115,7 +114,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             buyStrength = cfg.buyStrength;
             martinGale = true;
         } else if (availableCurrency < st.budget * 0.7) {
-            buyStrength = distEnter;
+            buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
             // buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - 0.04, 4);
             emergencyBreak = true;
         } else {
