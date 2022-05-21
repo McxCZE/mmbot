@@ -298,14 +298,14 @@ double assetsLeft, double currencyLeft) const {
 
     if (ebPriceEnter != 0) {
         gridStep = st.ebPriceEnter / gridSize; // order realization step.
-        double i = 0;
+        double i = gridSize;
         do {
-            if (tradePrice < tradePrice - (gridStep * i)) {
+            if (tradePrice < st.ebPriceEnter - (gridStep * i)) {
                 gridDepth = i;
                 break;
             }
-            i = i + 1;
-        } while (i <= gridSize);
+            i = i - 1;
+        } while (i >= 0);
 
     }
 
