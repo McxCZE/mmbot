@@ -194,7 +194,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             } else {
                 size = assetsToHoldWhenBuying - effectiveAssets;
             }
-            
+
             if (size < 0) { 
                 size = 0;
                 alert = false; 
@@ -259,9 +259,18 @@ double assetsLeft, double currencyLeft) const {
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
     auto newAsset = st.assets + effectiveSize;
+    double availableCurrency = std::max(0.0, st.currency);
 
     if (newAsset < 0) {
         newAsset = 0;
+    }
+
+    double ebPriceEnter = 0;
+
+    if (avilableCurrency < st.budget * 0.7) {
+        ebPriceEnter = tradePrice;
+    } else {
+        ebPriceEnter = 0;
     }
 
     auto cost = tradePrice * effectiveSize;
@@ -270,13 +279,12 @@ double assetsLeft, double currencyLeft) const {
 	auto enter = ep / newAsset;
 
 
-
 	//logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice }))
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, ebPriceEnter })) //ebPriceEnter
 	};
 }
 
