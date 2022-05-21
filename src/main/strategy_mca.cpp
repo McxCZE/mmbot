@@ -67,7 +67,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (initialBet > minSize) {size = initialBet;}
         if (dir < 0) { size = 0; }
 	} else {
-
          //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if (dir > 0 && st.enter < price) { size = 0; alert = false; return {size, alert};}
         if (dir < 0 && st.enter > price) { size = 0; alert = false; return {size, alert};}

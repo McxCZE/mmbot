@@ -137,6 +137,9 @@ VisSpread::Result VisSpread::point(double y) {
 	clow = low;
 	cspread = sp.spread;
 	return {true,price,low,high,trade,price2,trade2};
+
+	//trade2 - secondary Order
+	//price2 - secondary Order Price
 }
 
 DefaulSpread::DefaulSpread(double sma, double stdev, double force_spread)
