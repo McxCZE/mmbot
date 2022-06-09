@@ -49,6 +49,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double availableCurrency = std::max(0.0, st.currency);
     double cfgInitBet = cfg.initBet;
 	double size = 0;
+    double minAboveEnterPerc = cfg.minAboveEnter / 100;
+
     bool alert = true;
 
     double sellStrength = 0;
@@ -156,7 +158,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             return {size, alert}; //Escape, we do not need to worry about PNL. we never sell.
         }
 
-        if (dir < 0 && st.enter < price + (price * 0.001) && sellEverything) {
+        if (dir < 0 && st.enter < price + (price * minAboveEnterPerc) && sellEverything) {
             size = effectiveAssets;
             if (size < minSize) { size = 0; }
 
@@ -183,7 +185,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             if (size < minSize) {size = 0;}
         }
 
-        if (dir < 0 && st.enter < price + (price * 0.001)) {
+        if (dir < 0 && st.enter < price + (price * minAboveEnterPerc)) {
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { size = effectiveAssets; }
