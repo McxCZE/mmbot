@@ -681,11 +681,13 @@ App.prototype.fillForm = function (src, trg) {
 	data.buyStrength = 0.850;
 	data.sellStrength = 0.650;
 	data.initBet = 0;
+	data.minAboveEnter = 0;
 
 	if (data.strategy == "mathematical_cost_averaging") {
 		data.buyStrength = filledval(defval(src.strategy.buyStrength,0.850),1);
 		data.sellStrength = filledval(defval(src.strategy.sellStrength,0.650),1);
 		data.initBet = filledval(defval(src.strategy.initBet, 0), 0);
+		data.minAboveEnter = filledval(defval(src.strategy.initBet, 0), 0);
 	} else if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
 		data.acum_factor = filledval(defval(src.strategy.accum,0)*100,0);
 		data.external_assets = filledval(src.strategy.ea,0);
