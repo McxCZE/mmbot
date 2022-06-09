@@ -51,9 +51,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 	double size = 0;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
 
-    // sign = (std::isnan(cfg.minAboveEnter) || cfg.minAboveEnter <= 0) ? 0 : cfg.minAboveEnter / 100;
+    // sign = (std::isnan(cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
     // is equivalent to
-    // if (std::isnan(cfg.minAboveEnter) || cfg.minAboveEnter <= 0) {
+    // if (cfg.minAboveEnter <= 0.0) {
     //     sign = 0;
     // } else {
     //     sign = cfg.minAboveEnter / 100;
