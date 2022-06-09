@@ -1,3 +1,3 @@
 git pull
 /bin/sh build
-/bin/sh update_new_web
+/bin/sh update_new_web.sh
