@@ -49,7 +49,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double availableCurrency = std::max(0.0, st.currency);
     double cfgInitBet = cfg.initBet;
 	double size = 0;
-    double minAboveEnterPerc = cfg.minAboveEnter; //(cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter;
+    double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
 
     // sign = (std::isnan(cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
     // is equivalent to
