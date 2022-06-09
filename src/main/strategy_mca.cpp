@@ -166,7 +166,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             return {size, alert}; //Escape, we do not need to worry about PNL. we never sell.
         }
 
-        if (dir < 0 && st.enter + (price * minAboveEnterPerc) < price && sellEverything) {
+        if (dir < 0 && st.enter + (st.enter * minAboveEnterPerc) < price && sellEverything) {
             size = effectiveAssets;
             if (size < minSize) { size = 0; }
 
@@ -193,7 +193,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             if (size < minSize) {size = 0;}
         }
 
-        if (dir < 0 && st.enter + (price * minAboveEnterPerc) < price) {
+        if (dir < 0 && st.enter + (st.enter * minAboveEnterPerc) < price) {
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { size = effectiveAssets; }
