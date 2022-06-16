@@ -7,9 +7,7 @@
 
 #include <imtjson/object.h>
 #include "strategy_mca.h"
-
 #include <cmath>
-
 #include "sgn.h"
 #include "../shared/logOutput.h"
 using ondra_shared::logInfo;
@@ -45,11 +43,11 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 
 std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
-    // double position = st.position;
     double availableCurrency = std::max(0.0, st.currency);
-    double cfgInitBet = cfg.initBet;
+    double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0) ? 0 : cfg.initBet;
 	double size = 0;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
+    double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
 
     // sign = (std::isnan(cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
     // is equivalent to
@@ -64,41 +62,34 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
-    double pnl = (effectiveAssets * price) - (effectiveAssets * st.enter); 
+    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice); 
 
     bool martinGale = false;
     bool neverSell = false;
     bool sellEverything = false;
 
-    if (cfgInitBet < 0) {cfgInitBet = 0;}
-    if (cfgInitBet > 100) {cfgInitBet = 100;}
-    if (std::isnan(cfgInitBet)) {cfgInitBet = 0;}
-
     double initialBet = ((cfgInitBet/ 100) * st.budget) / price;
 
-	if (std::isnan(st.enter) || std::isinf(st.enter) || effectiveAssets < minSize) {
+	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = minSize;
 
         if (initialBet > minSize) { size = initialBet; }
         if (dir < 0) { size = 0; }
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        if (dir > 0 && st.enter < price) { size = 0; alert = false; return {size, alert};}
-        if (dir < 0 && st.enter > price) { size = 0; alert = false; return {size, alert};}
+        if (dir > 0 && enterPrice < price) { size = 0; alert = false; return {size, alert};}
+        if (dir < 0 && enterPrice > price) { size = 0; alert = false; return {size, alert};}
 
         //Enter price distance, calculation
-        if (st.enter > price) { distEnter = (st.enter - price) / st.enter; }
-        if (st.enter < price) { distEnter = (price - st.enter) / price; }
+        distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
+
+        // if (enterPrice > price) { distEnter = (enterPrice - price) / enterPrice; }
+        // if (enterPrice < price) { distEnter = (price - enterPrice) / price; }
 
         if (distEnter > 1) {distEnter = 1;} // <- Muze byt vetsi jak 100% u hyperSracek. Jak osetrit ?
 
-        double cfgSellStrength = cfg.sellStrength; // std::max(0.0, std::min(1.0, cfg.sellStrength))
-        double cfgBuyStrength = cfg.buyStrength; // std::max(0.0, std::min(1.0, cfg.buyStrength))
-
-        if (cfgSellStrength == 0 || cfgSellStrength <= 0 || std::isnan(cfgSellStrength)) 
-        {cfgSellStrength = 0;}
-        if (cfgBuyStrength == 0 || cfgBuyStrength <= 0 || std::isnan(cfgBuyStrength)) 
-        {cfgBuyStrength = 0;}
+        double cfgSellStrength = (cfg.sellStrength == 0 || cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength; // std::max(0.0, std::min(1.0, cfg.sellStrength))
+        double cfgBuyStrength = (cfg.buyStrength == 0 || cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength; // std::max(0.0, std::min(1.0, cfg.buyStrength))
 
         if (cfgSellStrength == 1 || cfgSellStrength >= 1) 
         {cfgSellStrength = 1;}
@@ -143,12 +134,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double assetsToHoldWhenSelling = 0;
 
         //Sinusoids sizes.
-        assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //st.enter
-        assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //st.enter              
-
+        assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //enterPrice
+        assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //enterPrice              
 
         //Region - Martingale
-        if (dir > 0 && st.enter > price && martinGale)
+        if (dir > 0 && enterPrice > price && martinGale)
         {
             martinGaleSize = effectiveAssets * buyStrength;
             size = martinGaleSize;
@@ -166,7 +156,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             return {size, alert}; //Escape, we do not need to worry about PNL. we never sell.
         }
 
-        if (dir < 0 && st.enter + (st.enter * minAboveEnterPerc) < price && sellEverything) {
+        if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price && sellEverything) {
             size = effectiveAssets;
             if (size < minSize) { size = 0; }
 
@@ -177,7 +167,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Endregion
 
         //Region - MCA
-        if (dir > 0 && st.enter > price) {
+        if (dir > 0 && enterPrice > price) {
 
             size = assetsToHoldWhenBuying - effectiveAssets;
 
@@ -193,7 +183,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             if (size < minSize) {size = 0;}
         }
 
-        if (dir < 0 && st.enter + (st.enter * minAboveEnterPerc) < price) {
+        if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
             size = assetsToHoldWhenSelling - effectiveAssets;
 
             if (size < 0) { size = effectiveAssets; }
@@ -315,9 +305,10 @@ double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
     // Pridano - Useless..
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double minSize = (st.budget / lastPrice) * 0.01;
+    double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
     double enter = 0;
 
-    if (std::isnan(st.enter) || std::isinf(st.enter) || st.enter == 0 || effectiveAssets < minSize) { 
+    if (enterPrice == 0 || effectiveAssets < minSize) { 
         enter = lastPrice; 
     } else {
         enter = st.enter;
