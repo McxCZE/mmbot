@@ -84,7 +84,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         
         
         sellStrength = (cfgSellStrength >= 1) ? 1 :  std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
-        sellStrength = (cfgSellStrength <= 0) ? 0 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        // sellStrength = (cfgSellStrength <= 0) ? 0 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = 0;
@@ -92,8 +92,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         assetsToHoldWhenBuying = (budget * buyStrength) / price; //enterPrice
 
-        assetsToHoldWhenSelling = (cfgSellStrength >= 1) ? 0 : (budget * sellStrength) / price; //enterPrice           
-        assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price;
+        assetsToHoldWhenSelling = (cfgSellStrength >= 1) ? 0 : (budget * sellStrength) / price; //Sell Everything
+        assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
 
         
         if (dir > 0 && enterPrice > price) {
@@ -102,10 +102,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         }
 
         if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
-
-            size = std::max(0.0, std::min(assetsToHoldWhenSelling - effectiveAssets, effectiveAssets));
+            size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
             size = (size < minSize) ? 0 : size;
-            size = size * -1;
+            // size = size * -1;
         }
 
         //Do not sell if in Loss.
@@ -119,17 +118,14 @@ IStrategy::OrderData Strategy_Mca::getNewOrder(
 const IStockApi::MarketInfo &minfo, double cur_price, double new_price,
 double dir, double assets, double currency, bool rej) const {
 
-	logInfo("getNewOrder: new_price=$1, assets=$2, currency=$3, dir=$4", new_price, assets, currency, dir);
-	// double size = calculateSize(new_price, assets, dir);
-    // if (assets < minfo.asset_step) { assets = 0; } //strategy Assets correction.
+	// logInfo("getNewOrder: new_price=$1, assets=$2, currency=$3, dir=$4", new_price, assets, currency, dir);
 
     double _minSize = minSize(minfo, new_price);
-
     auto res = calculateSize(new_price, assets, dir, _minSize);
 	double size = res.first;
 	auto alert = res.second ? IStrategy::Alert::enabled : IStrategy::Alert::disabled;
 
-	logInfo("   -> $1 (alert: $2)", size, res.second);
+	// logInfo("   -> $1 (alert: $2)", size, res.second);
 	// price where order is put. If this field is 0, recommended price is used
     // size of the order, +buy, -sell. If this field is 0, the order is not placed
 	return { 0, size, alert };
