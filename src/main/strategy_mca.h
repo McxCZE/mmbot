@@ -23,6 +23,9 @@ public:
 		double assets = 0;
 		double currency = 0;
 		double last_price = 0;
+		long alerts = 0;
+		long history [6] = { };
+		long sentiment = 0;
 	};
 
 	Strategy_Mca(const Config &cfg);
