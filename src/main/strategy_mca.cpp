@@ -95,12 +95,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
 
-        assetsToHoldWhenBuying = (budget * buyStrength) / price; //enterPrice
+        double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1;
+        assetsToHoldWhenBuying = ((budget * buyStrength) / price) / sentimentDenominator; //enterPrice
         assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = (st.sentiment < 0) ? (size / 1 + std::abs(st.sentiment)) : size;
             size = (size < minSize) ? 0 : size;
         }
 
