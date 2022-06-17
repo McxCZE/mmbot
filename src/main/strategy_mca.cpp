@@ -10,6 +10,7 @@
 #include <cmath>
 #include "sgn.h"
 #include "../shared/logOutput.h"
+
 using ondra_shared::logInfo;
 
 Strategy_Mca::Strategy_Mca(const Config &cfg):cfg(cfg) {}
@@ -45,30 +46,18 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
     double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0) ? 0 : cfg.initBet;
+    double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
 	double size = 0;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
 
-    // sign = (std::isnan(cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
-    // is equivalent to
-    // if (cfg.minAboveEnter <= 0.0) {
-    //     sign = 0;
-    // } else {
-    //     sign = cfg.minAboveEnter / 100;
-    // }
-
     bool alert = true;
-
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
-    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice); 
+    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
 
-    bool martinGale = false;
-    bool neverSell = false;
-    bool sellEverything = false;
-
-    double initialBet = ((cfgInitBet/ 100) * st.budget) / price;
+    double initialBet = ((cfgInitBet/ 100) * budget) / price;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = minSize;
@@ -82,118 +71,42 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         //Enter price distance, calculation
         distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
+        distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek. Jak osetrit ?
 
-        // if (enterPrice > price) { distEnter = (enterPrice - price) / enterPrice; }
-        // if (enterPrice < price) { distEnter = (price - enterPrice) / price; }
+        double cfgSellStrength = (cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength; // std::max(0.0, std::min(1.0, cfg.sellStrength))
+        double cfgBuyStrength = (cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength; // std::max(0.0, std::min(1.0, cfg.buyStrength))
 
-        if (distEnter > 1) {distEnter = 1;} // <- Muze byt vetsi jak 100% u hyperSracek. Jak osetrit ?
+        cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
+        cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
-        double cfgSellStrength = (cfg.sellStrength == 0 || cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength; // std::max(0.0, std::min(1.0, cfg.sellStrength))
-        double cfgBuyStrength = (cfg.buyStrength == 0 || cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength; // std::max(0.0, std::min(1.0, cfg.buyStrength))
+        //Parabola + Sinus
+        buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);    
+        
+        
+        sellStrength = (cfgSellStrength >= 1) ? 1 :  std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        sellStrength = (cfgSellStrength <= 0) ? 0 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
-        if (cfgSellStrength == 1 || cfgSellStrength >= 1) 
-        {cfgSellStrength = 1;}
-        if (cfgBuyStrength == 1 || cfgBuyStrength >= 1) 
-        {cfgBuyStrength = 1;}
-
-        //Parabola
-        // double sellStrength = std::pow(distEnter, 2) / (1 - cfg.sellStrength);
-
-        //Parabola + Sinus <- Currently Deployed.
-        // double sellStrength = -std::pow(distEnter, std::pow((1 - cfg.sellStrength), 4)) + 1;
-        // double buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
-
-        //Sinusoids - Production release.
-
-        //MartinGale - OrderSize calc
-        if (cfgBuyStrength >= 1) {
-            buyStrength = cfg.buyStrength;
-            martinGale = true;
-        } else if (cfgBuyStrength == 0) {
-            buyStrength = std::sin(std::pow(distEnter, 2) * (M_PI / 2));
-        } else {
-            buyStrength = std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);
-        }
-
-        if (cfgSellStrength >= 1) {
-            sellStrength = 1;
-            sellEverything = true;
-        } else if (cfgSellStrength <= 0) {
-            sellStrength = 0;
-            neverSell = true;
-        } else {
-            sellStrength = std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
-        }
-
-        if (std::isnan(buyStrength)) {buyStrength = 0;}
-        if (std::isnan(sellStrength)) {sellStrength = 0;}
-
-        //Decision making process, aka. How much to hold when buying/selling.
-        double martinGaleSize = 0;
+        //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
 
-        //Sinusoids sizes.
-        assetsToHoldWhenBuying = (st.budget * buyStrength) / price; //enterPrice
-        assetsToHoldWhenSelling = (st.budget * sellStrength) / price; //enterPrice              
+        assetsToHoldWhenBuying = (budget * buyStrength) / price; //enterPrice
 
-        //Region - Martingale
-        if (dir > 0 && enterPrice > price && martinGale)
-        {
-            martinGaleSize = effectiveAssets * buyStrength;
-            size = martinGaleSize;
-            if (size * price > availableCurrency)
-            {
-                size = availableCurrency / price;
-            }
+        assetsToHoldWhenSelling = (cfgSellStrength >= 1) ? 0 : (budget * sellStrength) / price; //enterPrice           
+        assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price;
 
-            return {size, alert}; //Escape
-        }
-
-        if (dir < 0 && neverSell) {
-            size = 0;
-
-            return {size, alert}; //Escape, we do not need to worry about PNL. we never sell.
-        }
-
-        if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price && sellEverything) {
-            size = effectiveAssets;
-            if (size < minSize) { size = 0; }
-
-            size = size * -1;
-            if (pnl < 0 && dir < 0) { size = 0; alert = false; return {size, alert}; };
-            return {size, alert};
-        }
-        //Endregion
-
-        //Region - MCA
+        
         if (dir > 0 && enterPrice > price) {
-
-            size = assetsToHoldWhenBuying - effectiveAssets;
-
-            if (size < 0) { 
-                size = 0;
-                alert = false; 
-            }
-
-            if (size * price > availableCurrency) { 
-                size = availableCurrency / price;
-            }
-
-            if (size < minSize) {size = 0;}
+            size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
+            size = (size < minSize) ? 0 : size;
         }
 
         if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
-            size = assetsToHoldWhenSelling - effectiveAssets;
 
-            if (size < 0) { size = effectiveAssets; }
-            if (size < minSize) { size = 0; }
-            if (size > effectiveAssets) { size = 0; alert = false; }
-            // if (size < minSize) {size = 0; alert = false; }
-            // if (size > effectiveAssets) { size = effectiveAssets; }
+            size = std::max(0.0, std::min(assetsToHoldWhenSelling - effectiveAssets, effectiveAssets));
+            size = (size < minSize) ? 0 : size;
             size = size * -1;
         }
-        //EndRegion
 
         //Do not sell if in Loss.
         if (pnl < 0 && dir < 0) { size = 0; alert = false; }
@@ -234,15 +147,15 @@ double assetsLeft, double currencyLeft) const {
 
 	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
-    auto newAsset = st.assets + effectiveSize;
+    auto newAsset = ((st.assets + effectiveSize) < 0) ? 0 : st.assets + effectiveSize;
 
-    if (newAsset < 0) {
-        newAsset = 0;
-    }
+    // if (newAsset < 0) {
+    //     newAsset = 0;
+    // }
 
     auto cost = tradePrice * effectiveSize;
-	auto norm_profit = effectiveSize >= 0 ? 0 : (tradePrice - st.enter) * -effectiveSize;
-	auto ep = effectiveSize >= 0 ? st.ep + cost : (st.ep / st.assets) * newAsset;
+	auto norm_profit = (effectiveSize >= 0) ? 0 : (tradePrice - st.enter) * -effectiveSize;
+	auto ep = (effectiveSize >= 0) ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
 
 	//logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
@@ -308,18 +221,11 @@ double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
     double enter = 0;
 
-    if (enterPrice == 0 || effectiveAssets < minSize) { 
-        enter = lastPrice; 
-    } else {
-        enter = st.enter;
-    }
+    enter = (enterPrice == 0 || effectiveAssets < minSize) ? lastPrice : st.enter;
 
     double cp = enter;
-    // Konec pridavku.
 
-    // double cp = lastPrice;
-
-	logInfo("getCenterPrice: lastPrice=$1, assets=$2 -*> $3", lastPrice, assets, cp);
+	// logInfo("getCenterPrice: lastPrice=$1, assets=$2 -*> $3", lastPrice, assets, cp);
 	return cp; // cp
 }
 
