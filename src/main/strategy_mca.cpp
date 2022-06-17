@@ -104,7 +104,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
             size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
             size = (size < minSize) ? 0 : size;
-            // size = size * -1;
+            size = size * -1;
         }
 
         //Do not sell if in Loss.
