@@ -73,7 +73,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			alert = true;
 			size = 0;
 		} else {
-            size = (st.alerts > 0) ? ((size / st.alerts) < minSize ? minSize : size / st.alerts) : size;
+            size = (st.alerts > 0) ? ((size / st.alerts) < minSize ? minSize : size / 2) : size; // deleno st.alerts funguje zvlastne, lepe funguje / 2
 		}
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
