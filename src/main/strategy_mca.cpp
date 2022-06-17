@@ -57,12 +57,30 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
     double initialBet = ((cfgInitBet/ 100) * budget) / price;
     bool alert = true;
+    bool downtrend = true;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = minSize;
 
-        if (initialBet > minSize) { size = initialBet; }
+		if (price > st.last_price) {
+			// Move last price up with alert
+            alert = false;
+			size = 0;
+		} else if (st.sentiment > 0 && downtrend) {
+			// Move last price up or down with alert due to uptrend sentiment
+			alert = true;
+			size = 0;
+		} else {
+			if (st.alerts > 0) {
+				size *= 0.5;
+			}
+		}
+
+        size = (initialBet > minSize) ? initialBet : size;
+
+        // if (initialBet > minSize) { size = initialBet; }
         if (dir < 0) { size = 0; }
+
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if (dir > 0 && enterPrice < price) { size = 0; alert = false; return {size, alert};}
@@ -144,13 +162,17 @@ double assetsLeft, double currencyLeft) const {
 	auto norm_profit = (effectiveSize >= 0) ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = (effectiveSize >= 0) ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
+	auto alerts = tradeSize == 0 ? (st.alerts + 1) : 0;
+	long dir = tradeSize > 0 ? -1 : (tradeSize < 0 ? 1 : (tradePrice > st.last_price ? 1 : -1));
+	long sentiment = st.history[0] + st.history[1] + st.history[2] + st.history[3] + st.history[4] + st.history[5] + dir;
 
-	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
+	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice }))
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, alerts, 
+			{ st.history[1], st.history[2], st.history[3], st.history[4], st.history[5], dir }, sentiment }))
 	};
 }
 
@@ -161,7 +183,10 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["budget"].getNumber(),
 			src["assets"].getNumber(),
 			src["currency"].getNumber(),
-			src["last_price"].getNumber()
+			src["last_price"].getNumber(),
+			src["alerts"].getInt(),
+			{ h[0].getInt(), h[1].getInt(), h[2].getInt(), h[3].getInt(), h[4].getInt(), h[5].getInt() },
+			src["sentiment"].getInt()
 	};
 	return new Strategy_Mca(cfg, std::move(st));
 }
@@ -188,7 +213,10 @@ json::Value Strategy_Mca::exportState() const {
 		{"budget", st.budget},
 		{"assets", st.assets},
 		{"currency", st.currency},
-		{"last_price", st.last_price}
+		{"last_price", st.last_price},
+		{"alerts", st.alerts},
+		{"history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
+		{"sentiment", st.sentiment}
 	};
 }
 
@@ -272,6 +300,10 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Enter price", st.enter},
 		{"Budget", st.budget},
 		{"Assets", st.assets},
-		{"Currency", st.currency}
+		{"Currency", st.currency},
+		{"Last price", st.last_price},
+		{"Alert count", st.alerts},
+		{"Market history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
+		{"Market sentiment", st.sentiment}
 	};
 }
