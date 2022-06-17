@@ -177,6 +177,7 @@ double assetsLeft, double currencyLeft) const {
 }
 
 PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo &minfo) const {
+    auto h = src["history"];
 	State st {
 			src["ep"].getNumber(),
 			src["enter"].getNumber(),
