@@ -51,13 +51,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 	double size = 0;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
-
-    bool alert = true;
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
     double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
     double initialBet = ((cfgInitBet/ 100) * budget) / price;
+    bool alert = true;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = minSize;
@@ -71,28 +70,23 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         //Enter price distance, calculation
         distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
-        distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek. Jak osetrit ?
+        distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek.
 
-        double cfgSellStrength = (cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength; // std::max(0.0, std::min(1.0, cfg.sellStrength))
-        double cfgBuyStrength = (cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength; // std::max(0.0, std::min(1.0, cfg.buyStrength))
+        double cfgSellStrength = (cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
+        double cfgBuyStrength = (cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
-        //Parabola + Sinus
+        //Parabola + Sinus - Srdce strategie.
         buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);    
-        
-        
         sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
-        // sellStrength = (cfgSellStrength <= 0) ? 0 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
 
         assetsToHoldWhenBuying = (budget * buyStrength) / price; //enterPrice
-
-        assetsToHoldWhenSelling = (cfgSellStrength >= 1) ? 0 : (budget * sellStrength) / price; //Sell Everything
         assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
 
         
@@ -104,6 +98,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
             size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
             size = (size < minSize) ? 0 : size;
+            size = (cfgSellStrength >= 1) ? effectiveAssets : size;
             size = size * -1;
         }
 
@@ -141,20 +136,16 @@ double assetsLeft, double currencyLeft) const {
 		effectiveSize = std::max(assetsLeft - st.assets, 0.0);
 	}
 
-	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
+	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, currencyLeft=$3, enterPrice=$4", tradeSize, assetsLeft, currencyLeft, st.enter);
 
     auto newAsset = ((st.assets + effectiveSize) < 0) ? 0 : st.assets + effectiveSize;
-
-    // if (newAsset < 0) {
-    //     newAsset = 0;
-    // }
 
     auto cost = tradePrice * effectiveSize;
 	auto norm_profit = (effectiveSize >= 0) ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = (effectiveSize >= 0) ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
 
-	//logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
+	logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
 	return {
 		// norm. p, accum, neutral pos, open price
