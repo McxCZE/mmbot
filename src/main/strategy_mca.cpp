@@ -83,7 +83,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);    
         
         
-        sellStrength = (cfgSellStrength >= 1) ? 1 :  std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
         // sellStrength = (cfgSellStrength <= 0) ? 0 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
