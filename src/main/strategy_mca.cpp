@@ -43,55 +43,46 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 }
 
 std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
-    // Strategie neprodava, jee treba nalezt chybu a opravit. Hlavne neaktualizovat na produkci ! : 17.6.2022 17.00
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
+
     double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0) ? 0 : cfg.initBet;
+    double cfgSellStrength = (cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
+    double cfgBuyStrength = (cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
+    double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
+
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
 	double size = 0;
-    double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
     double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
-    double initialBet = ((cfgInitBet/ 100) * budget) / price;
-    bool alert = true;
+    double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
+    bool alert = false;
     bool downtrend = true;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
-        size = minSize;
-
+        size = (initialBetSize > minSize && dir > 0) ? initialBetSize : minSize;
 		if (price > st.last_price) {
-			// Move last price up with alert
-            alert = false;
+			// Move last price up with alert, unless downtrend mode is enabled
+            alert = !downtrend;
 			size = 0;
-		} else if (st.sentiment > 0 && downtrend) {
+		} else if (st.sentiment > 0 && !downtrend) {
 			// Move last price up or down with alert due to uptrend sentiment
 			alert = true;
 			size = 0;
 		} else {
-			if (st.alerts > 0) {
-				size *= 0.5;
-			}
+            size = (st.alerts > 0) ? size / 1 + st.alerts : size;
 		}
-
-        size = (initialBet > minSize) ? initialBet : size;
-
-        // if (initialBet > minSize) { size = initialBet; }
-        if (dir < 0) { size = 0; }
-
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        if (dir > 0 && enterPrice < price) { size = 0; alert = false; return {size, alert};}
-        if (dir < 0 && enterPrice > price) { size = 0; alert = false; return {size, alert};}
+        if (dir > 0 && enterPrice < price) { size = 0; return {size, alert};}
+        if (dir < 0 && enterPrice > price) { size = 0; return {size, alert};}
 
         //Enter price distance, calculation
         distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
         distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek.
-
-        double cfgSellStrength = (cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
-        double cfgBuyStrength = (cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
@@ -106,7 +97,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         assetsToHoldWhenBuying = (budget * buyStrength) / price; //enterPrice
         assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
-
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
@@ -121,7 +111,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         }
 
         //Do not sell if in Loss.
-        if (pnl < 0 && dir < 0) { size = 0; alert = false; }
+        if (pnl < 0 && dir < 0) { size = 0; }
     }
 
     return {size, alert};
