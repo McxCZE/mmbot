@@ -43,6 +43,7 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 }
 
 std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
+    // Strategie neprodava, jee treba nalezt chybu a opravit. Hlavne neaktualizovat na produkci ! : 17.6.2022 17.00
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
     double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0) ? 0 : cfg.initBet;
@@ -56,7 +57,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double buyStrength = 0;
     double distEnter = 0;
     double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
-
     double initialBet = ((cfgInitBet/ 100) * budget) / price;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
