@@ -52,13 +52,16 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
 
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
-	double size = 0;
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
+
+	double size = 0;
     double sellStrength = 0;
     double buyStrength = 0;
     double distEnter = 0;
+
     double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
+
     bool alert = false;
     bool downtrend = true;
 
@@ -87,16 +90,17 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
+        double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1;
+
         //Parabola + Sinus - Srdce strategie.
-        buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4);    
+        buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4)) / sentimentDenominator;    
         sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
 
-        double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1;
-        assetsToHoldWhenBuying = ((budget * buyStrength) / price) / sentimentDenominator; //enterPrice
+        assetsToHoldWhenBuying = (budget * buyStrength) / price; //enterPrice
         assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && enterPrice > price) {
