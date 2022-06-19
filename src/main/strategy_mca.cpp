@@ -46,9 +46,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
 
-    double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0) ? 0 : cfg.initBet;
-    double cfgSellStrength = (cfg.sellStrength <= 0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
-    double cfgBuyStrength = (cfg.buyStrength <= 0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
+    double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0.0) ? 0 : cfg.initBet;
+    double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
+    double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
 
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
@@ -63,10 +63,10 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
 
     bool alert = false;
-    bool downtrend = (minAboveEnterPerc > 0) ? false : true;
+    bool downtrend = (minAboveEnterPerc > 0.0) ? false : true;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
-        size = (initialBetSize > minSize && dir > 0) ? initialBetSize : minSize;
+        size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
 		if (price > st.last_price) {
 			// Move last price up with alert, unless downtrend mode is enabled
             alert = !downtrend;
@@ -93,7 +93,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         
 
         //Parabola + Sinus - Srdce strategie.
-        buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4));    
+        buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4));    
         sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
