@@ -53,7 +53,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
-    bool downtrend = (minAboveEnterPerc == 0.0) ? true : false;
+    bool downtrend = (minAboveEnterPerc == 0.0) ? false : true;
 
 	double size = 0;
     double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
