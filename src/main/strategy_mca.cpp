@@ -69,7 +69,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
 
         if (price > st.last_price) {alert = !downtrend; size = 0;}
-        if (st.sentiment > 0 && !downtrend) {alert = true;size = 0;} 
+        else if (st.sentiment > 0 && !downtrend) {alert = true;size = 0;} 
         else {size = (st.alerts > 0) ? ((size / st.alerts) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 
 		// if (price > st.last_price) {
