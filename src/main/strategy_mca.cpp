@@ -63,19 +63,14 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
 
     bool alert = false;
-
-    // bool downtrend = (minAboveEnterPerc > 0.0) ? false : true;
+    bool downtrend = (minAboveEnterPerc == 0.0) ? false : true;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
 
-        // if (price > st.last_price) {}
-        if (st.sentiment > 0) {
-            alert = true;
-            size = 0;
-        } else {
-            size = (st.alerts > 0) ? ((size / st.alerts) < minSize ? minSize : size / 2) : size; // deleno st.alerts funguje zvlastne, lepe funguje / 2
-        }
+        if (price > st.last_price) {alert = !downtrend; size = 0;}
+        if (st.sentiment > 0 && !downtrend) {alert = true;size = 0;} 
+        else {size = (st.alerts > 0) ? ((size / st.alerts) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 
 		// if (price > st.last_price) {
 		// 	// Move last price up with alert, unless downtrend mode is enabled
