@@ -90,10 +90,10 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
-        double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1;
+        double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1; // Nevim jak to realne pouzit ? 
 
         //Parabola + Sinus - Srdce strategie.
-        buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4)) / sentimentDenominator;    
+        buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4));    
         sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
