@@ -104,9 +104,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
-        // double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1; // Nevim jak to realne pouzit ? 
+        double sentimentDenominator = (st.sentiment <= 0) ? 7 - (std::abs(st.sentiment) + 1) : 1; // Nevim jak to realne pouzit ? 
 
-        assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
+        assetsToHoldWhenBuying = ((budget * buyStrength) / price) / sentimentDenominator; //enterPrice
         assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && enterPrice > price) {
