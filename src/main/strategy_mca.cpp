@@ -48,12 +48,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
 
-    double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0.0) ? 0 : cfg.initBet;
+    double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0.0) ? 0 : (cfg.initBet >= 100) ? 100 : cfg.initBet;
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
-    bool downtrend = (minAboveEnterPerc == 0.0) ? false : true;
+    // bool downtrend = (minAboveEnterPerc == 0.0) ? false : true;
 
 	double size = 0;
     double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
@@ -62,10 +62,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
+        size = (st.sentiment > 0) ? 0 : size;
+        size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;
 
-        if (price > st.last_price) {alert = !downtrend; size = 0;}
-        else if (st.sentiment > 0 && !downtrend) {alert = true;size = 0;} 
-        else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
+        // if (price > st.last_price) {alert = !downtrend; size = 0;}
+        // else if (st.sentiment > 0 && !downtrend) {alert = true; size = 0;} 
+        // else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
