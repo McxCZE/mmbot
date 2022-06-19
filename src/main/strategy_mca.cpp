@@ -90,7 +90,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
-        // double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1; // Nevim jak to realne pouzit ? 
+        
 
         //Parabola + Sinus - Srdce strategie.
         buyStrength = (cfgBuyStrength == 0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4));    
@@ -99,13 +99,13 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
-
-        assetsToHoldWhenBuying = (budget * buyStrength) / price; //enterPrice
+        double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1; // Nevim jak to realne pouzit ? 
+        
+        assetsToHoldWhenBuying = ((budget * buyStrength) / price) / sentimentDenominator; //enterPrice
         assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = (st.sentiment <= -4) ? 0 : size;
             size = (size < minSize) ? 0 : size;
         }
 
