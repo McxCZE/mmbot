@@ -63,7 +63,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
 
     bool alert = false;
-    bool downtrend = (minAboveEnterPerc == 0) ? true: false;
+    bool downtrend = (minAboveEnterPerc > 0) ? false : true;
 
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0) ? initialBetSize : minSize;
