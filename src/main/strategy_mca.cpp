@@ -70,7 +70,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         if (price > st.last_price) {alert = !downtrend; size = 0;}
         else if (st.sentiment > 0 && !downtrend) {alert = true;size = 0;} 
-        else {size = (st.alerts > 0) ? ((size / st.alerts) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
+        else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 
 		// if (price > st.last_price) {
 		// 	// Move last price up with alert, unless downtrend mode is enabled
@@ -104,14 +104,13 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = 0;
         double assetsToHoldWhenSelling = 0;
-        double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1; // Nevim jak to realne pouzit ? 
+        // double sentimentDenominator = (st.sentiment <= -1) ? std::abs(st.sentiment) : 1; // Nevim jak to realne pouzit ? 
 
-        assetsToHoldWhenBuying = ((budget * buyStrength) / price) / sentimentDenominator; //enterPrice
+        assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
         assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = (st.sentiment <= -5) ? size : 0;
             size = (size < minSize) ? 0 : size;
         }
 
