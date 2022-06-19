@@ -45,26 +45,21 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
-
-    double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0.0) ? 0 : cfg.initBet;
-    double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
-    double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
-    double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
-
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
 
-	double size = 0;
-    double sellStrength = 0;
-    double buyStrength = 0;
-    double distEnter = 0;
-
-    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
+    double cfgInitBet = (std::isnan(cfg.initBet) || cfg.initBet <= 0.0) ? 0 : cfg.initBet;
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
-
-    bool alert = false;
+    double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
+    double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
+    double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
     bool downtrend = (minAboveEnterPerc == 0.0) ? true : false;
 
+	double size = 0;
+    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
+    
+    bool alert = false;
+    
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
 
@@ -78,22 +73,19 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (dir < 0 && enterPrice > price) { size = 0; return {size, alert};}
 
         //Enter price distance, calculation
-        distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
+        double distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
         distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek.
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
         //Parabola + Sinus - Srdce strategie.
-        buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4));    
-        sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4));    
+        double sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
-        double assetsToHoldWhenBuying = 0;
-        double assetsToHoldWhenSelling = 0;
-
-        assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
-        assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
+        double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
+        double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
