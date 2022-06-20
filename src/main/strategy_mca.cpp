@@ -143,7 +143,7 @@ double assetsLeft, double currencyLeft) const {
 	auto enter = ep / newAsset;
 	auto alerts = tradeSize == 0 ? (st.alerts + 1) : 0;
 	long dir = tradeSize > 0 ? -1 : (tradeSize < 0 ? 1 : (tradePrice > st.last_price ? 1 : -1));
-    auto lastBuyPrice = (dir > 0 && effectiveSize > 0) ? tradePrice : lastBuyPricePrevious;
+    auto lastBuyPrice = (dir > 0 && effectiveSize < 0) ? tradePrice : lastBuyPricePrevious;
 	long sentiment = st.history[0] + st.history[1] + st.history[2] + st.history[3] + st.history[4] + st.history[5] + dir;
 
 	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
