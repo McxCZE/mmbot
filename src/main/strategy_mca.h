@@ -66,7 +66,7 @@ protected:
 	Config cfg;
 	State st;
 
-	std::pair<double, bool> calculateSize(double price, double assets, double dir, double minSize) const;
+	std::pair<double, bool> calculateSize(double lastPrice, double price, double assets, double dir, double minSize) const;
 };
 
 #endif /* SRC_MAIN_Strategy_MCA_H_ */
