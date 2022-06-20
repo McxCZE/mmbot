@@ -57,10 +57,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
 	double size = 0;
 
-    bool alert = false;
+    bool alert = true;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0) ? initialBetSize : (dir > 0) ? minSize : 0;
+        size = (price > st.last_price) ? 0 : size;
 
         // size = (st.sentiment > 0) ? 0 : size; // Nedari se mi to rozfungovat.
         // size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size; //puvodne st.alerts
