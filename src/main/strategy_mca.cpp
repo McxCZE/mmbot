@@ -56,13 +56,13 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     // bool downtrend = (minAboveEnterPerc == 0.0) ? false : true;
 
 	double size = 0;
-    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice);
+    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice); //Standardizovat na % ?
     
     bool alert = false;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
-        size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
-        size = (price > st.last_price) ? 0 : size;
+        size = (initialBetSize > minSize && dir > 0) ? initialBetSize : (dir > 0) ? minSize : 0;
+        size = (price < st.last_price && size > 0) ? size : 0;
         // size = (st.sentiment > 0) ? 0 : size; // Nedari se mi to rozfungovat.
         // size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size; //puvodne st.alerts
         // if (price > st.last_price) {alert = !downtrend; size = 0;}
