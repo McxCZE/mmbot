@@ -66,10 +66,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			// Move last price up with alert, unless downtrend mode is enabled
 			alert = true;
 			size = 0;
-		} else if (st.sentiment > 0) {
-			// Move last price up or down with alert due to uptrend sentiment
-			alert = true;
-			size = 0;
 		} else {
 			if (st.alerts > 0) {
 				size *= 0.5;
