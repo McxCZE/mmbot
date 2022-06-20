@@ -96,7 +96,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         }
 
         //Do not sell if in Loss.
-        if (pnlPercentage + minAboveEnterPerc < 0 && dir < 0) { size = 0; }
+        if (pnlPercentage < 0 + minAboveEnterPerc && dir < 0) { size = 0; }
     }
 
     return {size, alert};
