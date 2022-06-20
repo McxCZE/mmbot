@@ -56,7 +56,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double pnlPercentage = ((price / enterPrice) - 1);
 
 	double size = 0;
-
     bool alert = true;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
@@ -70,11 +69,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        if (dir > 0 && enterPrice < price) {size = 0; alert = false; return {size, alert};}
-        if (dir < 0 && enterPrice > price) {size = 0; alert = false; return {size, alert};}
+        if (dir > 0 && pnlPercentage > 0) {size = 0; alert = false; return {size, alert};}
+        if (dir < 0 && pnlPercentage < 0) {size = 0; alert = false; return {size, alert};}
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
-        cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
+        cfgBuyStrength = (cfgBuyStrength >= 1 || st.currency < st.budget * 0.25) ? 1 : cfgBuyStrength;
 
         //Parabola + Sinus - Srdce strategie.
         double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(pnlPercentage, 2) * (M_PI / 2)) : std::sin(std::pow(pnlPercentage, 2)) / std::pow(1 - cfg.buyStrength, 4);
@@ -86,8 +85,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = size / (st.sentiment < 0 ? 1 + std::abs(st.sentiment) : 1);
-            size = (price > st.last_price) ? 0 : size;
+            // size = size / (st.sentiment < 0 ? 1 + std::abs(st.sentiment) : 1);
             size = size < minSize ? 0 : size;
         }
 
@@ -143,7 +141,7 @@ double assetsLeft, double currencyLeft) const {
 	auto enter = ep / newAsset;
 	auto alerts = tradeSize == 0 ? (st.alerts + 1) : 0;
 	long dir = tradeSize > 0 ? -1 : (tradeSize < 0 ? 1 : (tradePrice > st.last_price ? 1 : -1));
-    auto lastBuyPrice = (dir > 0 && effectiveSize < 0) ? tradePrice : lastBuyPricePrevious;
+    auto lastBuyPrice = (dir > 0 && tradeSize < 0) ? tradePrice : lastBuyPricePrevious;
 	long sentiment = st.history[0] + st.history[1] + st.history[2] + st.history[3] + st.history[4] + st.history[5] + dir;
 
 	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
