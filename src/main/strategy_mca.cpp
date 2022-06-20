@@ -56,7 +56,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
 	double size = 0;
     double pnlPercentage = ((price / enterPrice) - 1);
-    
+
     bool alert = false;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
@@ -67,22 +67,17 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // if (price > st.last_price) {alert = !downtrend; size = 0;}
         // else if (st.sentiment > 0 && !downtrend) {alert = true; size = 0;} 
         // else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
-
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        if (dir > 0 && enterPrice < price) { size = 0; return {size, alert};}
-        if (dir < 0 && enterPrice > price) { size = 0; return {size, alert};}
+        if (dir > 0 && enterPrice < price) {size = 0; return {size, alert};}
+        if (dir < 0 && enterPrice > price) {size = 0; return {size, alert};}
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
         //Parabola + Sinus - Srdce strategie.
-        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? 
-            std::sin(std::pow(pnlPercentage, 2) * (M_PI / 2)) : 
-            ((std::sin(std::pow(pnlPercentage, 2)) / std::pow(1 - cfg.buyStrength, 4))) / 1 - (st.sentiment < 0 ? (std::abs(st.sentiment) / 10) : 0);    
-        double sellStrength = (cfgSellStrength >= 1) ? 
-            1 : 
-            std::sin(std::pow(pnlPercentage, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(pnlPercentage, 2) * (M_PI / 2)) : std::sin(std::pow(pnlPercentage, 2)) / std::pow(1 - cfg.buyStrength, 4);
+        double sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(pnlPercentage, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
