@@ -53,17 +53,15 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
-    // bool downtrend = (minAboveEnterPerc == 0.0) ? false : true;
 
 	double size = 0;
-    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice); //Standardizovat na % ? ((price / enterPrice) - 1)
     double pnlPercentage = ((price / enterPrice) - 1);
     
     bool alert = false;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0) ? initialBetSize : (dir > 0) ? minSize : 0;
-        size = (price < st.last_price && size > 0) ? size : 0;
+
         // size = (st.sentiment > 0) ? 0 : size; // Nedari se mi to rozfungovat.
         // size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size; //puvodne st.alerts
         // if (price > st.last_price) {alert = !downtrend; size = 0;}
@@ -74,10 +72,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if (dir > 0 && enterPrice < price) { size = 0; return {size, alert};}
         if (dir < 0 && enterPrice > price) { size = 0; return {size, alert};}
-
-        //Enter price distance, calculation
-        // double distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
-        // distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek.
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
@@ -92,8 +86,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = size / ((st.sentiment < 0) ? 1 + std::abs(st.sentiment) : 1);
-            size = (size < minSize) ? 0 : size;
+            // size = size / ((st.sentiment < 0) ? 1 + std::abs(st.sentiment) : 1);
+            size = size < minSize ? 0 : size;
         }
 
         if (dir < 0 && enterPrice < price) {
