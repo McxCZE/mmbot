@@ -13,7 +13,7 @@ public:
 		double buyStrength;
         double sellStrength;
 		double initBet;
-		double minAboveEnter;
+		double minPnl;
 	};
 
 	struct State {

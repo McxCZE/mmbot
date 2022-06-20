@@ -681,13 +681,13 @@ App.prototype.fillForm = function (src, trg) {
 	data.buyStrength = 0.850;
 	data.sellStrength = 0.650;
 	data.initBet = 0;
-	data.minAboveEnter = 0;
+	data.minPnl = 0;
 
 	if (data.strategy == "mathematical_cost_averaging") {
 		data.buyStrength = filledval(defval(src.strategy.buyStrength,0.850),1);
 		data.sellStrength = filledval(defval(src.strategy.sellStrength,0.650),1);
 		data.initBet = filledval(defval(src.strategy.initBet, 0), 0);
-		data.minAboveEnter = filledval(defval(src.strategy.minAboveEnter, 0), 0);
+		data.minPnl = filledval(defval(src.strategy.minPnl, 0), 0);
 	} else if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
 		data.acum_factor = filledval(defval(src.strategy.accum,0)*100,0);
 		data.external_assets = filledval(src.strategy.ea,0);
@@ -883,7 +883,7 @@ function getStrategyData(data, inv) {
 			buyStrength: data.buyStrength,
 			sellStrength: data.sellStrength,
 			initBet: data.initBet,
-			minAboveEnter: data.minAboveEnter
+			minPnl: data.minPnl
 		};
 	} else if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
 		strategy.accum = data.acum_factor/100.0;
@@ -1931,7 +1931,7 @@ App.prototype.init_backtest = function(form, id, pair, broker) {
 		"incval_w","incval_r","incval_ms","incval_ri","incval_z",
 		"hedge_short","hedge_long","hedge_drop",
 		"shg_w","shg_p","shg_z","shg_b","shg_olt","shg_ol","shg_lp","shg_rnv","shg_avgsp","shg_boostmode","shg_lazyopen","shg_lazyclose","shg_offset",
-		"trade_within_budget","buyStrength","sellStrength","initBet","minAboveEnter"];
+		"trade_within_budget","buyStrength","sellStrength","initBet","minPnl"];
 	var spread_inputs = ["spread_calc_stdev_hours","secondary_order", "spread_calc_sma_hours","spread_mult","dynmult_raise","dynmult_fall","dynmult_mode","dynmult_sliding","dynmult_cap","dynmult_mult","force_spread","spread_mode","spread_freeze"];
 	var leverage = form._pair.leverage != 0;	
 	var pairinfo = form._pair;

@@ -52,10 +52,10 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
-    double minAboveEnterPerc = (cfg.minAboveEnter <= 0.0) ? 0 : cfg.minAboveEnter / 100;
+    double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
+    double pnlPercentage = ((price / enterPrice) - 1);
 
 	double size = 0;
-    double pnlPercentage = ((price / enterPrice) - 1);
 
     bool alert = false;
     
@@ -97,7 +97,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         }
 
         //Do not sell if in Loss.
-        if (pnlPercentage < 0 + minAboveEnterPerc && dir < 0) { size = 0; }
+        if (pnlPercentage < 0 + minPnlPercentage && dir < 0) { size = 0; }
     }
 
     return {size, alert};
