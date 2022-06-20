@@ -92,7 +92,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double lastPrice, double pri
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
             size = size / ((st.sentiment < 0) ? 1 + std::abs(st.sentiment) : 1);
-            size = (size < minSize && lastPrice > price) ? 0 : size;
+            size = (size < minSize && st.last_price > price) ? 0 : size;
         }
 
         if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
