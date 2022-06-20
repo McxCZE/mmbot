@@ -191,7 +191,7 @@ json::Value Strategy_Mca::exportState() const {
 		{"budget", st.budget},
 		{"assets", st.assets},
 		{"currency", st.currency},
-		{"last_price", st.last_price}
+		{"last_price", st.last_price},
 		{"alerts", st.alerts},
 		{"history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
 		{"sentiment", st.sentiment}
@@ -282,7 +282,7 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency},
-		{"Last price", st.last_price}
+		{"Last price", st.last_price},
 		{"Alert count", st.alerts},
 		{"Market history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
 		{"Market sentiment", st.sentiment}
