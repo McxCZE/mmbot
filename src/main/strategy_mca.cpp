@@ -77,8 +77,12 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
         //Parabola + Sinus - Srdce strategie.
-        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(pnlPercentage, 2) * (M_PI / 2)) : (std::sin(std::pow(pnlPercentage, 2)) / std::pow(1 - cfg.buyStrength, 4));    
-        double sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(pnlPercentage, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? 
+            std::sin(std::pow(pnlPercentage, 2) * (M_PI / 2)) : 
+            ((std::sin(std::pow(pnlPercentage, 2)) / std::pow(1 - cfg.buyStrength, 4))) / 1 - (st.sentiment < 0 ? (std::abs(st.sentiment) / 10) : 0);    
+        double sellStrength = (cfgSellStrength >= 1) ? 
+            1 : 
+            std::sin(std::pow(pnlPercentage, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
