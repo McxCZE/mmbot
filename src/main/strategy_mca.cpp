@@ -210,15 +210,15 @@ double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
 	// }
 
     // Pridano - Useless..
-    double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
-    double minSize = (st.budget / lastPrice) * 0.01;
-    double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
-    double enter = 0;
+    // double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
+    // double minSize = (st.budget / lastPrice) * 0.01;
+    // double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
+    // double enter = 0;
 
-    enter = (enterPrice == 0 || effectiveAssets < minSize) ? lastPrice : st.enter;
+    // enter = (enterPrice == 0 || effectiveAssets < minSize) ? lastPrice : st.enter;
 
-    // double cp = lastPrice; //enter
-    double cp = enter;
+    double cp = lastPrice; //enter
+    // double cp = enter;
 
 	// logInfo("getCenterPrice: lastPrice=$1, assets=$2 -*> $3", lastPrice, assets, cp);
 	return cp; // cp
