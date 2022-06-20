@@ -73,11 +73,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			}
 		}
 
-        // size = (st.sentiment > 0) ? 0 : size; // Nedari se mi to rozfungovat.
-        // size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size; //puvodne st.alerts
-        // if (price > st.last_price) {alert = !downtrend; size = 0;}
-        // else if (st.sentiment > 0 && !downtrend) {alert = true; size = 0;} 
-        // else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
@@ -93,17 +88,22 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
         double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
-        if (dir > 0 && enterPrice > price) {
-            size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = size < minSize ? 0 : size;
-        }
+        // if (dir > 0 && enterPrice > price) {
+        //     size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
+        //     size = size < minSize ? 0 : size;
+        // }
 
-        if (dir < 0 && enterPrice < price) {
-            size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
-            size = (size < minSize) ? 0 : size;
-            size = (cfgSellStrength >= 1) ? effectiveAssets : size;
-            size = size * -1;
-        }
+        // if (dir < 0 && enterPrice < price) {
+        //     size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
+        //     size = (size < minSize) ? 0 : size;
+        //     size = (cfgSellStrength >= 1) ? effectiveAssets : size;
+        //     size = size * -1;
+        // }
+
+		//Release Currency experiment
+        size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
+        size = size < minSize ? 0 : size;
+		size = size * dir;
 
         //Do not sell if in Loss.
         if (pnlPercentage < 0 + minPnlPercentage && dir < 0) { size = 0; }
