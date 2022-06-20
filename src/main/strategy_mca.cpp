@@ -42,7 +42,7 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 	});
 }
 
-std::pair<double, bool> Strategy_Mca::calculateSize(double lastPrice, double price, double assets, double dir, double minSize) const {
+std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
@@ -92,7 +92,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double lastPrice, double pri
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
             size = size / ((st.sentiment < 0) ? 1 + std::abs(st.sentiment) : 1);
-            size = (size < minSize && st.last_price > price) ? 0 : size;
+            size = (size < minSize) ? 0 : size;
         }
 
         if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
@@ -116,7 +116,7 @@ double dir, double assets, double currency, bool rej) const {
 	// logInfo("getNewOrder: new_price=$1, assets=$2, currency=$3, dir=$4", new_price, assets, currency, dir);
 
     double _minSize = minSize(minfo, new_price);
-    auto res = calculateSize(cur_price, new_price, assets, dir, _minSize);
+    auto res = calculateSize(new_price, assets, dir, _minSize);
 	double size = res.first;
 	auto alert = res.second ? IStrategy::Alert::enabled : IStrategy::Alert::disabled;
 
