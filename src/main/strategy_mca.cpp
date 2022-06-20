@@ -221,7 +221,7 @@ double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
 
     enter = (enterPrice == 0 || effectiveAssets < minSize) ? lastPrice : st.enter;
 
-    double cp = enter;
+    double cp = lastPrice; //enter
 
 	// logInfo("getCenterPrice: lastPrice=$1, assets=$2 -*> $3", lastPrice, assets, cp);
 	return cp; // cp
