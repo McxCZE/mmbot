@@ -68,7 +68,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			size = 0;
 		} else {
 			if (st.alerts > 0) {
-				size = size / std::max(1, st.alerts);
+				size = size / (st.alerts < 1) ? 1 : st.alerts;
 				size = (size < minSize) ? minSize : size;
 			}
 		}
