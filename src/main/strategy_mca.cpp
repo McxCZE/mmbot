@@ -62,7 +62,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
-
+        size = (price > st.last_price) ? 0 : size;
         // size = (st.sentiment > 0) ? 0 : size; // Nedari se mi to rozfungovat.
         // size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size; //puvodne st.alerts
         // if (price > st.last_price) {alert = !downtrend; size = 0;}
@@ -91,7 +91,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = (size < 0) ? 0 : size;
+            size = (price > st.last_price) ? 0 : size;
             size = size / (st.sentiment < 0) ? 1 + std::abs(st.sentiment) : 1;
             size = (size < minSize) ? 0 : size;
         }
