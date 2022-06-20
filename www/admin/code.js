@@ -678,16 +678,16 @@ App.prototype.fillForm = function (src, trg) {
 	data.incval_r = 100;
 	data.incval_ms = 0;
 	data.incval_ri = false;
-	data.buyStrength = 0.850;
-	data.sellStrength = 0.650;
+	data.buyStrength = 0.650;
+	data.sellStrength = 1;
 	data.initBet = 0;
 	data.minPnl = 0;
 
 	if (data.strategy == "mathematical_cost_averaging") {
-		data.buyStrength = filledval(defval(src.strategy.buyStrength,0.850),1);
-		data.sellStrength = filledval(defval(src.strategy.sellStrength,0.650),1);
-		data.initBet = filledval(defval(src.strategy.initBet, 0), 0);
-		data.minPnl = filledval(defval(src.strategy.minPnl, 0), 0);
+		data.buyStrength = filledval(defval(src.strategy.buyStrength,0.650),1);
+		data.sellStrength = filledval(defval(src.strategy.sellStrength,1),1);
+		data.initBet = filledval(defval(src.strategy.initBet, 1), 0);
+		data.minPnl = filledval(defval(src.strategy.minPnl, 0.1), 0);
 	} else if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
 		data.acum_factor = filledval(defval(src.strategy.accum,0)*100,0);
 		data.external_assets = filledval(src.strategy.ea,0);

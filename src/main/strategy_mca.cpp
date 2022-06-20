@@ -88,25 +88,20 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
         double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
-        // if (dir > 0 && enterPrice > price) {
-        //     size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-        //     size = size < minSize ? 0 : size;
-        // }
+        if (dir > 0 && enterPrice > price) {
+            size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
+            size = size < minSize ? 0 : size;
+        }
 
-        // if (dir < 0 && enterPrice < price) {
-        //     size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
-        //     size = (size < minSize) ? 0 : size;
-        //     size = (cfgSellStrength >= 1) ? effectiveAssets : size;
-        //     size = size * -1;
-        // }
-
-		//Release Currency experiment
-        size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-        size = size < minSize ? 0 : size;
-		size = size * dir;
+        if (dir < 0 && enterPrice < price) {
+            size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
+            size = (size < minSize) ? 0 : size;
+            size = (cfgSellStrength >= 1) ? effectiveAssets : size;
+            size = size * -1;
+        }
 
         //Do not sell if in Loss.
-        // if (pnlPercentage < 0 + minPnlPercentage && dir < 0) { size = 0; }
+        if (pnlPercentage < 0 + minPnlPercentage && dir < 0) { size = 0; }
     }
 
     return {size, alert};
