@@ -42,7 +42,7 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 	});
 }
 
-std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
+std::pair<double, bool> Strategy_Mca::calculateSize(double lastPrice, double price, double assets, double dir, double minSize) const {
     double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
@@ -92,7 +92,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
             size = size / ((st.sentiment < 0) ? 1 + std::abs(st.sentiment) : 1);
-            size = (size < minSize && price > st.last_buy_price) ? 0 : size;
+            size = (size < minSize && lastPrice > price) ? 0 : size;
         }
 
         if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
@@ -116,7 +116,7 @@ double dir, double assets, double currency, bool rej) const {
 	// logInfo("getNewOrder: new_price=$1, assets=$2, currency=$3, dir=$4", new_price, assets, currency, dir);
 
     double _minSize = minSize(minfo, new_price);
-    auto res = calculateSize(new_price, assets, dir, _minSize);
+    auto res = calculateSize(cur_price, new_price, assets, dir, _minSize);
 	double size = res.first;
 	auto alert = res.second ? IStrategy::Alert::enabled : IStrategy::Alert::disabled;
 
@@ -144,7 +144,6 @@ double assetsLeft, double currencyLeft) const {
 	auto norm_profit = (effectiveSize >= 0) ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = (effectiveSize >= 0) ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
-    auto lastBuyPrice = (tradeSize > 0) ? tradePrice : st.last_buy_price;
 	auto alerts = tradeSize == 0 ? (st.alerts + 1) : 0;
 	long dir = tradeSize > 0 ? -1 : (tradeSize < 0 ? 1 : (tradePrice > st.last_price ? 1 : -1));
 	long sentiment = st.history[0] + st.history[1] + st.history[2] + st.history[3] + st.history[4] + st.history[5] + dir;
@@ -154,7 +153,7 @@ double assetsLeft, double currencyLeft) const {
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, lastBuyPrice, alerts, 
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, alerts, 
 			{ st.history[1], st.history[2], st.history[3], st.history[4], st.history[5], dir }, sentiment }))
 	};
 }
@@ -168,7 +167,6 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["assets"].getNumber(),
 			src["currency"].getNumber(),
 			src["last_price"].getNumber(),
-            src["last_buy_price"].getNumber(),
 			src["alerts"].getInt(),
 			{ h[0].getInt(), h[1].getInt(), h[2].getInt(), h[3].getInt(), h[4].getInt(), h[5].getInt() },
 			src["sentiment"].getInt()
@@ -199,7 +197,6 @@ json::Value Strategy_Mca::exportState() const {
 		{"assets", st.assets},
 		{"currency", st.currency},
 		{"last_price", st.last_price},
-        {"last_buy_price", st.last_buy_price},
 		{"alerts", st.alerts},
 		{"history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
 		{"sentiment", st.sentiment}
@@ -288,7 +285,6 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Assets", st.assets},
 		{"Currency", st.currency},
 		{"Last price", st.last_price},
-        {"Last buy price", st.last_buy_price},
 		{"Alert count", st.alerts},
 		{"Market history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
 		{"Market sentiment", st.sentiment}
