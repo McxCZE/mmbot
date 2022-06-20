@@ -56,7 +56,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     // bool downtrend = (minAboveEnterPerc == 0.0) ? false : true;
 
 	double size = 0;
-    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice); //Standardizovat na % ?
+    double pnl = (effectiveAssets * price) - (effectiveAssets * enterPrice); //Standardizovat na % ? ((price / enterPrice) - 1)
+    double pnlPercentage = ((price / enterPrice) - 1);
     
     bool alert = false;
     
@@ -75,15 +76,15 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         if (dir < 0 && enterPrice > price) { size = 0; return {size, alert};}
 
         //Enter price distance, calculation
-        double distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
-        distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek.
+        // double distEnter = (enterPrice > price) ? (enterPrice - price) / enterPrice : (price - enterPrice) / price;
+        // distEnter = (distEnter > 1) ? 1 : distEnter; // <- Muze byt vetsi jak 100% u hyperSracek.
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
 
         //Parabola + Sinus - Srdce strategie.
-        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(distEnter, 2) * (M_PI / 2)) : (std::sin(std::pow(distEnter, 2)) / std::pow(1 - cfg.buyStrength, 4));    
-        double sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength >= 1) ? std::sin(std::pow(pnlPercentage, 2) * (M_PI / 2)) : (std::sin(std::pow(pnlPercentage, 2)) / std::pow(1 - cfg.buyStrength, 4));    
+        double sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(pnlPercentage, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
@@ -95,7 +96,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = (size < minSize) ? 0 : size;
         }
 
-        if (dir < 0 && enterPrice + (enterPrice * minAboveEnterPerc) < price) {
+        if (dir < 0 && enterPrice < price) {
             size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
             size = (size < minSize) ? 0 : size;
             size = (cfgSellStrength >= 1) ? effectiveAssets : size;
@@ -103,7 +104,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         }
 
         //Do not sell if in Loss.
-        if (pnl < 0 && dir < 0) { size = 0; }
+        if (pnlPercentage + minAboveEnterPerc < 0 && dir < 0) { size = 0; }
     }
 
     return {size, alert};
