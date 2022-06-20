@@ -141,7 +141,6 @@ double assetsLeft, double currencyLeft) const {
 	auto enter = ep / newAsset;
 	auto alerts = tradeSize == 0 ? (st.alerts + 1) : 0;
 	long dir = tradeSize > 0 ? -1 : (tradeSize < 0 ? 1 : (tradePrice > st.last_price ? 1 : -1));
-    auto lastBuyPrice = (dir > 0 && tradeSize < 0) ? tradePrice : lastBuyPricePrevious;
 	long sentiment = st.history[0] + st.history[1] + st.history[2] + st.history[3] + st.history[4] + st.history[5] + dir;
 
 	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
@@ -149,7 +148,7 @@ double assetsLeft, double currencyLeft) const {
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, lastBuyPrice, alerts, 
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, alerts, 
 			{ st.history[1], st.history[2], st.history[3], st.history[4], st.history[5], dir }, sentiment }))
 	};
 }
@@ -163,7 +162,6 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["assets"].getNumber(),
 			src["currency"].getNumber(),
 			src["last_price"].getNumber(),
-            src["last_buy_price"].getNumber(),
 			src["alerts"].getInt(),
 			{ h[0].getInt(), h[1].getInt(), h[2].getInt(), h[3].getInt(), h[4].getInt(), h[5].getInt() },
 			src["sentiment"].getInt()
@@ -193,8 +191,7 @@ json::Value Strategy_Mca::exportState() const {
 		{"budget", st.budget},
 		{"assets", st.assets},
 		{"currency", st.currency},
-		{"last_price", st.last_price},
-        {"last_buy_price", st.last_buy_price},
+		{"last_price", st.last_price}
 		{"alerts", st.alerts},
 		{"history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
 		{"sentiment", st.sentiment}
@@ -285,8 +282,7 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency},
-		{"Last price", st.last_price},
-        {"Last buy price", st.last_buy_price},
+		{"Last price", st.last_price}
 		{"Alert count", st.alerts},
 		{"Market history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
 		{"Market sentiment", st.sentiment}
