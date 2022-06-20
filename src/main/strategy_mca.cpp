@@ -62,9 +62,9 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0.0) ? initialBetSize : minSize;
-        // size = (st.sentiment > 0) ? 0 : size; // Nedari se mi to rozfungovat.
-        size = (st.sentiment > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size; //puvodne st.alerts
 
+        // size = (st.sentiment > 0) ? 0 : size; // Nedari se mi to rozfungovat.
+        // size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size; //puvodne st.alerts
         // if (price > st.last_price) {alert = !downtrend; size = 0;}
         // else if (st.sentiment > 0 && !downtrend) {alert = true; size = 0;} 
         // else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
@@ -86,7 +86,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double sellStrength = (cfgSellStrength >= 1) ? 1 : std::sin(std::pow(distEnter, 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
-        double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
+        double assetsToHoldWhenBuying = ((budget * buyStrength) / price) / (st.sentiment < 0) ? 1 + std::abs(st.sentiment) : 1; //enterPrice
         double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && enterPrice > price) {
