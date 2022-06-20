@@ -69,7 +69,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        if (dir > 0 && pnlPercentage > 0 || dir < 0 && pnlPercentage < 0) {size = 0; alert = false; return {size, alert};}
+        if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
