@@ -69,8 +69,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // else {size = (st.alerts > 0) ? ((size / 2) < minSize ? minSize : size / 2) : size;} // deleno st.alerts funguje zvlastne, lepe funguje / 2
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        // if (dir > 0 && pnlPercentage > 0) {size = 0; alert = false; return {size, alert};}
-        // if (dir < 0 && pnlPercentage < 0) {size = 0; alert = false; return {size, alert};}
+        if (dir > 0 && pnlPercentage > 0 || dir < 0 && pnlPercentage < 0) {size = 0; alert = false; return {size, alert};}
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
@@ -85,7 +84,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         
         if (dir > 0 && enterPrice > price) {
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-            size = size / (st.sentiment < 0 ? 1 + std::abs(st.sentiment) : 1);
             size = size < minSize ? 0 : size;
         }
 
@@ -202,35 +200,13 @@ std::string_view Strategy_Mca::getID() const {
 }
 
 double Strategy_Mca::getCenterPrice(double lastPrice, double assets) const {
-
     lastPrice = !std::isnan(st.last_price) && st.last_price > 0 ? st.last_price : 0;
-
-	// if (!std::isnan(st.last_price) && st.last_price > 0) {
-	// 	lastPrice = st.last_price;
-	// }
-
-    // Pridano - Useless..
-    // double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
-    // double minSize = (st.budget / lastPrice) * 0.01;
-    // double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
-    // double enter = 0;
-
-    // enter = (enterPrice == 0 || effectiveAssets < minSize) ? lastPrice : st.enter;
-
-    double cp = lastPrice; //enter
-    // double cp = enter;
-
+    double cp = lastPrice;
 	// logInfo("getCenterPrice: lastPrice=$1, assets=$2 -*> $3", lastPrice, assets, cp);
 	return cp; // cp
 }
 
 double Strategy_Mca::calcInitialPosition(const IStockApi::MarketInfo &minfo, double price, double assets, double currency) const {
-	// OK
-	// double budget = minfo.leverage ? currency : (currency + price * assets);
-    // double _minSize = minSize(minfo, price);
-    // double initialBet = ((cfg.initBet / 100) * st.budget) / price;
-    // if (initialBet > _minSize) {return initialBet;}
-	// return _minSize;
     return 0; // <- Always zero? Strategy Logic of CalcSize.
 }
 
