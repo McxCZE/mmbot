@@ -689,7 +689,7 @@ App.prototype.fillForm = function (src, trg) {
 		data.sellStrength = filledval(defval(src.strategy.sellStrength,1),1);
 		data.initBet = filledval(defval(src.strategy.initBet, 1), 0);
 		data.minPnl = filledval(defval(src.strategy.minPnl, 0.1), 0);
-		data.useSentiment = filledval(defval(src.strategy.useSentiment, false));
+		data.useSentiment = filledval(src.strategy.useSentiment, false);
 	} else if (data.strategy == "halfhalf" || data.strategy == "keepvalue" || data.strategy == "exponencial"|| data.strategy == "hypersquare"||data.strategy == "conststep") {
 		data.acum_factor = filledval(defval(src.strategy.accum,0)*100,0);
 		data.external_assets = filledval(src.strategy.ea,0);
