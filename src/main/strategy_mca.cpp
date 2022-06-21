@@ -52,11 +52,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
-	bool cfgSentiment = cfg.useSentiment;
     double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
     double pnlPercentage = ((price / enterPrice) - 1);
 
 	double size = 0;
+	bool cfgSentiment = cfg.useSentiment;
     bool alert = true;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
