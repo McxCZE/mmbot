@@ -52,6 +52,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double initialBetSize = ((cfgInitBet/ 100) * budget) / price;
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
+	double cfgSentiment = (cfg.useSentiment == true || cfg.useSentiment == false) ? cfg.useSentiment : true;
     double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
     double pnlPercentage = ((price / enterPrice) - 1);
 
@@ -60,19 +61,17 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
         size = (initialBetSize > minSize && dir > 0) ? initialBetSize : (dir > 0) ? minSize : 0;
-        // size = (price > st.last_price) ? 0 : size;
 
-		if (price > st.last_price) {
-			// Move last price up with alert, unless downtrend mode is enabled
+		if (price > st.last_price && cfgSentiment) {
+			// Move last price up with alert
 			alert = true;
 			size = 0;
-		} else {
+		} else if (cfgSentiment) {
 			if (st.alerts > 0) {
 				size = size / (st.alerts < 1) ? 1 : st.alerts;
 				size = (size < minSize) ? minSize : size;
 			}
 		}
-
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
