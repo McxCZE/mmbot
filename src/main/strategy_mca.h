@@ -14,7 +14,7 @@ public:
         double sellStrength;
 		double initBet;
 		double minPnl;
-		double useSentiment;
+		bool useSentiment;
 	};
 
 	struct State {
