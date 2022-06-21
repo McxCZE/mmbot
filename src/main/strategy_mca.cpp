@@ -60,7 +60,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     bool alert = true;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
-        size = (initialBetSize > minSize && dir > 0) ? initialBetSize : (dir > 0) ? minSize : 0;
+        size = (initialBetSize > minSize && dir > 0) ? initialBetSize : minSize + (minSize * 0.5);
 
 		if (price > st.last_price && cfgSentiment) {
 			// Move last price up with alert
