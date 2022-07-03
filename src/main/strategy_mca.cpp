@@ -56,22 +56,23 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double pnlPercentage = ((price / enterPrice) - 1);
 
 	double size = 0;
-	bool cfgSentiment = cfg.useSentiment;
-    bool alert = false;
+	// bool cfgSentiment = cfg.useSentiment; // <- Bug, pokud je Sentiment off, neobchoduji na vyšších cenách. 
+    bool alert = true;
     
 	if (enterPrice == 0 || effectiveAssets < minSize) { // effectiveAssets < ((cfgInitBet/ 100) * st.budget) / price
-        size = (initialBetSize > minSize && dir > 0) ? initialBetSize : minSize + (minSize * 0.5);
+        size = (initialBetSize > minSize) ? initialBetSize : minSize + (minSize * 0.5);
+		size = (dir > 0) ? size : 0;
 
-		if (price > st.last_price && cfgSentiment) {
-			// Move last price up with alert
-			alert = true;
-			size = 0;
-		} else if (cfgSentiment) {
-			if (st.alerts > 0) {
-				size = size / (st.alerts < 1) ? 1 : st.alerts;
-				size = (size < minSize) ? minSize : size;
-			}
-		}
+		// if (price > st.last_price && cfgSentiment) {
+		// 	// Move last price up with alert
+		// 	alert = true;
+		// 	size = 0;
+		// } else if (cfgSentiment) {
+		// 	if (st.alerts > 0) {
+		// 		size = size / (st.alerts < 1) ? 1 : st.alerts;
+		// 		size = (size < minSize) ? minSize : size;
+		// 	}
+		// }
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
@@ -141,17 +142,17 @@ double assetsLeft, double currencyLeft) const {
 	auto norm_profit = (effectiveSize >= 0) ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = (effectiveSize >= 0) ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
-	auto alerts = tradeSize == 0 ? (st.alerts + 1) : 0;
-	long dir = tradeSize > 0 ? -1 : (tradeSize < 0 ? 1 : (tradePrice > st.last_price ? 1 : -1));
-	long sentiment = st.history[0] + st.history[1] + st.history[2] + st.history[3] + st.history[4] + st.history[5] + dir;
+
+	// auto alerts = tradeSize == 0 ? (st.alerts + 1) : 0;
+	// long dir = tradeSize > 0 ? -1 : (tradeSize < 0 ? 1 : (tradePrice > st.last_price ? 1 : -1));
+	// long sentiment = st.history[0] + st.history[1] + st.history[2] + st.history[3] + st.history[4] + st.history[5] + dir;
 
 	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, alerts, 
-			{ st.history[1], st.history[2], st.history[3], st.history[4], st.history[5], dir }, sentiment }))
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice }))
 	};
 }
 
@@ -163,10 +164,7 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["budget"].getNumber(),
 			src["assets"].getNumber(),
 			src["currency"].getNumber(),
-			src["last_price"].getNumber(),
-			src["alerts"].getInt(),
-			{ h[0].getInt(), h[1].getInt(), h[2].getInt(), h[3].getInt(), h[4].getInt(), h[5].getInt() },
-			src["sentiment"].getInt()
+			src["last_price"].getNumber()
 	};
 	return new Strategy_Mca(cfg, std::move(st));
 }
@@ -193,10 +191,7 @@ json::Value Strategy_Mca::exportState() const {
 		{"budget", st.budget},
 		{"assets", st.assets},
 		{"currency", st.currency},
-		{"last_price", st.last_price},
-		{"alerts", st.alerts},
-		{"history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
-		{"sentiment", st.sentiment}
+		{"last_price", st.last_price}
 	};
 }
 
@@ -262,9 +257,6 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency},
-		{"Last price", st.last_price},
-		{"Alert count", st.alerts},
-		{"Market history", {st.history[0],st.history[1],st.history[2],st.history[3],st.history[4],st.history[5]}},
-		{"Market sentiment", st.sentiment}
+		{"Last price", st.last_price}
 	};
 }
