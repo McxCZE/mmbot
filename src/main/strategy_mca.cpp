@@ -80,7 +80,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
             size = size < minSize ? 0 : size;
 
-			if (size == 0) {alert = false; return {size, alert}}
+			if (size == 0) {alert = false; return {size, alert};}
         }
 
         if (dir < 0 && enterPrice < price) {
