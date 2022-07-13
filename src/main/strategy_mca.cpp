@@ -63,7 +63,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		size = (dir > 0) ? size : 0;
 	} else {
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
+        // if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : cfgSellStrength;
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : cfgBuyStrength;
@@ -76,22 +76,19 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
         double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
-        if (dir > 0 ) { //&& enterPrice > price
+        if (dir > 0) { //&& enterPrice > price
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
             size = size < minSize ? 0 : size;
 
 			if (size == 0) {alert = false; return {size, alert};}
         }
 
-        if (dir < 0 ) { //&& enterPrice < price
+        if (dir < 0) { //&& enterPrice < price
             size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
             size = size < minSize ? 0 : size;
             size = cfgSellStrength >= 1 ? effectiveAssets : size; //Sell All
             size = size > 0 ? size * -1 : 0;
         }
-
-        //Do not sell if in Loss.
-		// size = (pnlPercentage < 0 + minPnlPercentage && dir < 0) ? 0 : size;
     }
 
     return {size, alert};
