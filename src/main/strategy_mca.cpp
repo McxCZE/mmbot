@@ -92,7 +92,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			if (size == 0) {alert = false; return {size, alert};}
         }
 
-        if (dir < 0 && pnlPercentage > minPnlPercentage) { //&& enterPrice < price
+        if (dir < 0 && pnlPercentage > 0.0) { //&& enterPrice < price
             size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
 			size = cfgSellStrength >= 1 ? effectiveAssets : size; //Sell All
 			size = size > effectiveAssets ? effectiveAssets : size;
