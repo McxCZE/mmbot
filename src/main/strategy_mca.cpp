@@ -53,7 +53,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
-    double pnlPercentage = ((price / st.neutral_price) - 1); //Deleno, enterPrice
+    double pnlPercentage = ((st.neutral_price / price) - 1); //Deleno, enterPrice
 	double stoploss = (cfg.stoploss > 0) ? 0 : cfg.stoploss / 100;
 
 	double size = 0;
@@ -87,8 +87,15 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         
 		// size = std::max(0.0, std::min(std::abs(assetsToHoldWhenBuying - effectiveAssets), effectiveAssets));
 		size = assetsToHoldWhenBuying - effectiveAssets;
-        size = size < minSize ? 0 : size;
-		if (size == 0) {alert = false; return {size, alert};}
+
+		if (dir > 0 && pnlPercentage < 0.0) {
+			size = size < minSize ? minSize : size;
+			if (size == 0) {alert = false; return {size, alert};}
+		}
+
+		if (dir < 0) {
+			size = size < minSize ? minSize * -1 : size;
+		}
 
         // if (dir > 0) { //&& enterPrice > price
         //     size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
