@@ -253,6 +253,6 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Assets", st.assets},
 		{"Currency", st.currency},
 		{"Last price", st.last_price},
-		["Neutral price", st.neutral_price]
+		{"Neutral price", st.neutral_price}
 	};
 }
