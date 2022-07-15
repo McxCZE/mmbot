@@ -83,7 +83,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
-        double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? std::abs(effectiveAssets) : (budget * sellStrength) / price; //Never Sell
+        double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && pnlPercentage < 0.0) { //&& enterPrice > price
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
