@@ -53,7 +53,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
-    double pnlPercentage = ((price / enterPrice) - 1);
+    double pnlPercentage = ((price / st.neutral_price) - 1); //Deleno, enterPrice
 	double stoploss = (cfg.stoploss > 0) ? 0 : cfg.stoploss / 100;
 
 	double size = 0;
@@ -74,16 +74,16 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		// 	return {size, alert};
 		// }
 
-        cfgSellStrength = (cfgSellStrength >= 1) ? 1 : std::max(0.0, cfgSellStrength);
+        // cfgSellStrength = (cfgSellStrength >= 1) ? 1 : std::max(0.0, cfgSellStrength);
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : std::max(0.01, cfgBuyStrength);
 
         //Parabola + Sinus - Srdce strategie.
         double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength == 1) ? std::sin(std::pow(std::abs(pnlPercentage), 2) * (M_PI / 2)) : std::sin(std::pow(std::abs(pnlPercentage), 2)) / std::pow(1 - cfg.buyStrength, 4);
-        double sellStrength = (cfgSellStrength == 1) ? 1 : std::sin(std::pow(std::abs(pnlPercentage), 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        // double sellStrength = (cfgSellStrength == 1) ? 1 : std::sin(std::pow(std::abs(pnlPercentage), 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
-        double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
+        // double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
         if (dir > 0 && pnlPercentage < 0.0) { //&& enterPrice > price
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
@@ -93,7 +93,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         }
 
         if (dir < 0 && pnlPercentage > 0.0) { //&& enterPrice < price
-            size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
+            // size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
+			size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
 			size = cfgSellStrength >= 1 ? effectiveAssets : size; //Sell All
 			size = size > effectiveAssets ? effectiveAssets : size;
             size = size > 0 ? size * -1 : 0;
