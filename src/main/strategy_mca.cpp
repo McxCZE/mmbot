@@ -94,7 +94,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		}
 
 		if (dir < 0) {
-			size = size < minSize ? minSize * -1 : size * -1;
+			size = std::abs(size) < minSize ? minSize * -1 : size;
 		}
 
         // if (dir > 0) { //&& enterPrice > price
