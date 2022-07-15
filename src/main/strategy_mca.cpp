@@ -85,7 +85,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
         double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
-        if (dir > 0 && pnlPercentage < 0.0) { //&& enterPrice > price
+        if (dir > 0) { //&& enterPrice > price
             size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
             size = size < minSize ? 0 : size;
 
@@ -125,6 +125,7 @@ const IStockApi::MarketInfo &minfo, double tradePrice, double tradeSize,
 double assetsLeft, double currencyLeft) const {
 	if (!isValid()) throw std::runtime_error("Strategy is not initialized in onTrade call.");
 	auto effectiveSize = tradeSize;
+	double _minSize = minSize(minfo, new_price);
 
 	if (tradeSize > 0 && st.assets > assetsLeft - tradeSize) {
 		effectiveSize = std::max(assetsLeft - st.assets, 0.0);
@@ -137,13 +138,14 @@ double assetsLeft, double currencyLeft) const {
 	auto norm_profit = (effectiveSize >= 0) ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = (effectiveSize >= 0) ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
+	auto neutralPrice = _minSize < effectiveSize || st.assets < _minSize ? tradePrice : 0;
 
 	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice }))
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, neutralPrice }))
 	};
 }
 
@@ -155,7 +157,8 @@ PStrategy Strategy_Mca::importState(json::Value src, const IStockApi::MarketInfo
 			src["budget"].getNumber(),
 			src["assets"].getNumber(),
 			src["currency"].getNumber(),
-			src["last_price"].getNumber()
+			src["last_price"].getNumber(),
+			src["neutral_price"].getNumber()
 	};
 	return new Strategy_Mca(cfg, std::move(st));
 }
@@ -182,7 +185,8 @@ json::Value Strategy_Mca::exportState() const {
 		{"budget", st.budget},
 		{"assets", st.assets},
 		{"currency", st.currency},
-		{"last_price", st.last_price}
+		{"last_price", st.last_price},
+		{"neutral_price", st.neutral_price}
 	};
 }
 
@@ -248,6 +252,7 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency},
-		{"Last price", st.last_price}
+		{"Last price", st.last_price},
+		["Neutral price", st.neutral_price]
 	};
 }

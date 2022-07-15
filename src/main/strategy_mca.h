@@ -3,7 +3,6 @@
 
 #include <string_view>
 #include <limits>
-
 #include "istrategy.h"
 
 class Strategy_Mca: public IStrategy {
@@ -24,6 +23,7 @@ public:
 		double assets = 0;
 		double currency = 0;
 		double last_price = 0;
+		double neutral_price = 0;
 	};
 
 	Strategy_Mca(const Config &cfg);
