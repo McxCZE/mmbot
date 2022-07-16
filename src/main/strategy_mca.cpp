@@ -67,12 +67,11 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         // if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
 
 		// Stoploss
-		// if (pnlPercentage < stoploss) {
-		// 	// size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
-		// 	size = effectiveAssets; // sell all;
-        //     size = dir < 0 ? size * -1 : size;
-		// 	return {size, alert};
-		// }
+		if (pnlPercentage < stoploss) {
+			size = effectiveAssets;
+            size = dir < 0 ? size * dir : size * -1;
+			return {size, alert};
+		}
 
         // cfgSellStrength = (cfgSellStrength >= 1) ? 1 : std::max(0.0, cfgSellStrength);
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : std::max(0.01, cfgBuyStrength);
