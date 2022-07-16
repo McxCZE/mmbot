@@ -72,6 +72,7 @@ Strategy Strategy::create_base(std::string_view id, json::Value config) {
 		cfg.sellStrength = config["sellStrength"].getNumber();
 		cfg.initBet = config["initBet"].getNumber();
 		cfg.minPnl = config["minPnl"].getNumber();
+		cfg.stoploss = config["stoploss"].getNumber();
 		return Strategy(new Strategy_Mca(cfg));
 	} else if (id == Strategy_HalfHalf::id) {
 		Strategy_HalfHalf::Config cfg;
