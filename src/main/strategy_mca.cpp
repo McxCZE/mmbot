@@ -54,7 +54,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
     double pnlPercentage = ((price / enterPrice) - 1); //Deleno, enterPrice
-	double stoploss = (cfg.stoploss > 0) ? 0 : cfg.stoploss / 100;
+	double stoploss = cfg.stoploss / 100;
 
 	double size = 0;
     bool alert = true;
