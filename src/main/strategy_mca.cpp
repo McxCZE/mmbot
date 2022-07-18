@@ -73,44 +73,34 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			return {size, alert};
 		}
 
-        // cfgSellStrength = (cfgSellStrength >= 1) ? 1 : std::max(0.0, cfgSellStrength);
+        cfgSellStrength = (cfgSellStrength >= 1) ? 1 : std::max(0.0, cfgSellStrength);
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : std::max(0.01, cfgBuyStrength);
 
         //Parabola + Sinus - Srdce strategie.
-        double buyStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength == 1) ? std::sin(std::pow(std::abs(pnlPercentage), 2) * (M_PI / 2)) : std::sin(std::pow(std::abs(pnlPercentage), 2)) / std::pow(1 - cfg.buyStrength, 4);
-        // double sellStrength = (cfgSellStrength == 1) ? 1 : std::sin(std::pow(std::abs(pnlPercentage), 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
+        double longStrength = (cfgBuyStrength == 0.0 || cfgBuyStrength == 1) ? std::sin(std::pow(std::abs(pnlPercentage), 2) * (M_PI / 2)) : std::sin(std::pow(std::abs(pnlPercentage), 2)) / std::pow(1 - cfg.buyStrength, 4);
+		double shortStrength = std::sin(std::pow(std::abs(pnlPercentage), 2) + M_PI) / std::pow(1 - cfg.sellStrength, 4) + 1;
 
         //Decision making process. How much to hold when buying/selling.
-        double assetsToHoldWhenBuying = ((budget * buyStrength) / price); //enterPrice
+		double assetsHeldLong = (budget * longStrength) / price; //enterPrice
+		double assetsHeldShort = (budget * sellStrength) / price;
+
+        // double assetsToHoldWhenBuying = ((budget * longStrength) / price); //enterPrice
         // double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
         
 		// size = std::max(0.0, std::min(std::abs(assetsToHoldWhenBuying - effectiveAssets), effectiveAssets));
 		
 		if (dir > 0 && pnlPercentage < 0.0) {
-			size = assetsToHoldWhenBuying - effectiveAssets;
+			size = std::max(0.0, std::min(std::abs(assetsHeldLong - effectiveAssets), effectiveAssets));
 			size = size < minSize ? 0 : size;
 			if (size == 0) {alert = false; return {size, alert};}
 		}
 
 		if (dir < 0 && pnlPercentage > minPnlPercentage) {
-			// size = std::abs(size) < minSize ? minSize * -1 : (std::abs(size) > effectiveAssets) ? effectiveAssets * -1 : size;
-			size = effectiveAssets * dir;
+			size = cfgSellStrength < 1 && cfgSellStrength > 0 ? std::max(0.0, std::min(std::abs(assetsHeldShort - effectiveAssets), effectiveAssets)) : effectiveAssets;
+			size = size > effectiveAssets ? effectiveAssets : (size < minSize) ? minSize : size;
+			size = size * dir;
 		}
 
-        // if (dir > 0) { //&& enterPrice > price
-        //     size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-        //     size = size < minSize ? 0 : size;
-
-		// 	if (size == 0) {alert = false; return {size, alert};}
-        // }
-
-        // if (dir < 0) { //&& enterPrice < price
-        //     // size = std::max(0.0, std::min(std::abs(assetsToHoldWhenSelling - effectiveAssets), effectiveAssets));
-		// 	size = std::max(0.0, std::min(assetsToHoldWhenBuying - effectiveAssets, availableCurrency / price));
-		// 	// size = cfgSellStrength >= 1 ? effectiveAssets : size; //Sell All
-		// 	// size = size > effectiveAssets ? effectiveAssets : size;
-        //     size = size < 0 && std::abs(size) > minSize ? size : 0;
-        // }
     }
 
     return {size, alert};
