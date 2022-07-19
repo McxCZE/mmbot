@@ -83,9 +83,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		double assetsHeldLong = (budget * longStrength) / price; //enterPrice
 		double assetsHeldShort = cfgSellStrength <= 0 ? effectiveAssets : (budget * shortStrength) / price;
 
-        // double assetsToHoldWhenBuying = ((budget * longStrength) / price); //enterPrice
-        // double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
-        
 		// size = std::max(0.0, std::min(std::abs(assetsToHoldWhenBuying - effectiveAssets), effectiveAssets));
 		
 		if (dir > 0 && pnlPercentage < 0.0) {
@@ -96,8 +93,8 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
 		if (dir < 0 && pnlPercentage > minPnlPercentage) {
 			size = std::max(0.0, std::min(assetsHeldShort - effectiveAssets, effectiveAssets));
-			size = size > effectiveAssets ? effectiveAssets : (size < minSize) ? minSize : size;
-			size = size * dir;
+			size = (size < minSize) ? minSize : size;
+			size = size;
 		}
 
     }
