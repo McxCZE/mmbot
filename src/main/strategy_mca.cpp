@@ -94,7 +94,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		if (dir < 0 && pnlPercentage > minPnlPercentage) {
 			size = std::max(0.0, std::min(assetsHeldShort - effectiveAssets, effectiveAssets));
 			size = (size < minSize) ? minSize : size;
-			size = size;
+			size = size * dir;
 		}
 
     }
