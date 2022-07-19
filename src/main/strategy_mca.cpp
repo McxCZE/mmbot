@@ -43,8 +43,7 @@ static double minSize(const IStockApi::MarketInfo &minfo, double price) {
 }
 
 std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets, double dir, double minSize) const {
-    // double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
-	double effectiveAssets = std::min(st.assets, assets); // For shorts
+    double effectiveAssets = std::max(0.0, std::min(st.assets, assets));
     double availableCurrency = std::max(0.0, st.currency);
     double budget = (std::isnan(st.budget) || st.budget <= 0) ? 0 : st.budget;
     double enterPrice = (std::isnan(st.enter) || std::isinf(st.enter) || st.enter < 0) ? 0 : st.enter;
@@ -53,7 +52,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double cfgSellStrength = (cfg.sellStrength <= 0.0 || std::isnan(cfg.sellStrength)) ? 0 : cfg.sellStrength;
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
-    double pnlPercentage = ((price / enterPrice) - 1); //Deleno, enterPrice
+    double pnlPercentage = ((price / enterPrice) - 1);
 	double stoploss = (cfg.stoploss > 0.0) ? 0 : cfg.stoploss / 100;
 
 	double size = 0;
@@ -63,15 +62,15 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         size = (initialBetSize > minSize) ? initialBetSize : minSize + (minSize * 0.5);
 		size = (dir > 0) ? size : 0;
 	} else {
-        //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
-        // if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
-
 		// Stoploss
 		if (pnlPercentage < stoploss) {
 			size = effectiveAssets;
             size = dir < 0 ? size * dir : size * -1;
 			return {size, alert};
 		}
+
+        //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
+        if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
 
         cfgSellStrength = (cfgSellStrength >= 1) ? 1 : std::max(0.0, cfgSellStrength);
         cfgBuyStrength = (cfgBuyStrength >= 1) ? 1 : std::max(0.01, cfgBuyStrength);
@@ -82,7 +81,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         //Decision making process. How much to hold when buying/selling.
 		double assetsHeldLong = (budget * longStrength) / price; //enterPrice
-		double assetsHeldShort = (budget * shortStrength) / price;
+		double assetsHeldShort = cfgSellStrength <= 0 ? effectiveAssets : (budget * sellStrength) / price;
 
         // double assetsToHoldWhenBuying = ((budget * longStrength) / price); //enterPrice
         // double assetsToHoldWhenSelling = (cfgSellStrength <= 0) ? effectiveAssets : (budget * sellStrength) / price; //Never Sell
@@ -90,13 +89,13 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		// size = std::max(0.0, std::min(std::abs(assetsToHoldWhenBuying - effectiveAssets), effectiveAssets));
 		
 		if (dir > 0 && pnlPercentage < 0.0) {
-			size = std::max(0.0, std::min(std::abs(assetsHeldLong - effectiveAssets), effectiveAssets));
+			size = std::max(0.0, std::min(assetsHeldLong - effectiveAssets, availableCurrency / price));
 			size = size < minSize ? 0 : size;
 			if (size == 0) {alert = false; return {size, alert};}
 		}
 
 		if (dir < 0 && pnlPercentage > minPnlPercentage) {
-			size = cfgSellStrength < 1 && cfgSellStrength > 0 ? std::max(0.0, std::min(std::abs(assetsHeldShort - effectiveAssets), effectiveAssets)) : effectiveAssets;
+			size = cfgSellStrength < 1 && cfgSellStrength > 0 ? std::max(0.0, std::min(assetsHeldShort - effectiveAssets, effectiveAssets)) : effectiveAssets;
 			size = size > effectiveAssets ? effectiveAssets : (size < minSize) ? minSize : size;
 			size = size * dir;
 		}
