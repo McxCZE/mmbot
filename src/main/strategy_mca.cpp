@@ -65,7 +65,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		// Stoploss
 		if (pnlPercentage < stoploss) {
 			size = effectiveAssets;
-            size = dir < 0 ? size * dir : size * -1;
+            size = size * -1;
 			return {size, alert};
 		}
 
