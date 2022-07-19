@@ -25,7 +25,7 @@ PStrategy Strategy_Mca::init(double price, double assets, double currency, bool 
 	PStrategy out(new Strategy_Mca(cfg, State{
 			assets * price, //ep
 			assets > 0 ? price : std::numeric_limits<double>::quiet_NaN(), //enter
-			currency + (assets * price), // budget
+			currency + (assets * price), //budget
 			assets,
 			currency
 	}));
@@ -81,9 +81,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 
         //Decision making process. How much to hold when buying/selling.
 		double assetsHeldLong = (budget * longStrength) / price; //enterPrice
-		// double assetsHeldShort = cfgSellStrength == 0 ? effectiveAssets : (budget * shortStrength) / price;
-
-		// size = std::max(0.0, std::min(std::abs(assetsToHoldWhenBuying - effectiveAssets), effectiveAssets));
 		
 		if (dir > 0 && pnlPercentage < 0.0) {
 			size = std::max(0.0, std::min(assetsHeldLong - effectiveAssets, availableCurrency / price));
@@ -92,9 +89,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 		}
 
 		if (dir < 0 && pnlPercentage > minPnlPercentage) {
-			// size = std::max(0.0, std::min(std::abs(assetsHeldShort - effectiveAssets), effectiveAssets));
 			size = cfgSellStrength == 0 ? 0 : effectiveAssets;
-			// size = size < minSize ? 0 : size;
 			size = size * -1;
 		}
 
