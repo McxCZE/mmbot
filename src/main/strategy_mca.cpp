@@ -95,7 +95,7 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			size = std::max(0.0, std::min(std::abs(assetsHeldShort - effectiveAssets), effectiveAssets));
 			size = size < minSize ? 0 : size;
             size = cfgSellStrength == 1 ? effectiveAssets : size; //Sell All
-			size = size;
+			size = size * -1;
 		}
 
     }
