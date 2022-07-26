@@ -92,7 +92,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
 			size = cfgSellStrength == 0 ? 0 : effectiveAssets;
 			size = size * -1;
 		}
-
     }
 
     return {size, alert};
