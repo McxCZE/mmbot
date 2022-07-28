@@ -53,7 +53,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
     double cfgBuyStrength = (cfg.buyStrength <= 0.0 || std::isnan(cfg.buyStrength)) ? 0 : cfg.buyStrength;
     double minPnlPercentage = (cfg.minPnl <= 0.0) ? 0 : cfg.minPnl / 100;
     double pnlPercentage = ((price / enterPrice) - 1);
-	double stoploss = (cfg.stoploss > 0.0) ? 0 : cfg.stoploss / 100;
 
 	double size = 0;
     bool alert = true;
@@ -62,13 +61,6 @@ std::pair<double, bool> Strategy_Mca::calculateSize(double price, double assets,
         size = (initialBetSize > minSize) ? initialBetSize : minSize + (minSize * 0.5);
 		size = (dir > 0) ? size : 0;
 	} else {
-		// Stoploss
-		if (pnlPercentage < stoploss) {
-			size = effectiveAssets;
-            size = size * -1;
-			return {size, alert};
-		}
-
         //Turn off alerts for opposite directions. Do not calculate the strategy = useless.
         if ((dir > 0 && pnlPercentage > 0) || (dir < 0 && pnlPercentage < 0)) {size = 0; alert = false; return {size, alert};}
 
@@ -132,14 +124,13 @@ double assetsLeft, double currencyLeft) const {
 	auto norm_profit = (effectiveSize >= 0) ? 0 : (tradePrice - st.enter) * -effectiveSize;
 	auto ep = (effectiveSize >= 0) ? st.ep + cost : (st.ep / st.assets) * newAsset;
 	auto enter = ep / newAsset;
-	auto neutralPrice = (st.assets > _minSize) ? st.neutral_price : tradePrice;
 
 	// logInfo("onTrade: tradeSize=$1, assetsLeft=$2, enter=$3, currencyLeft=$4", tradeSize, assetsLeft, enter, currencyLeft);
 
 	return {
 		// norm. p, accum, neutral pos, open price
 		{ norm_profit, 0, std::isnan(enter) ? tradePrice : enter, 0 },
-		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice, neutralPrice }))
+		PStrategy(new Strategy_Mca(cfg, State { ep, enter, st.budget, newAsset, std::min(st.budget, st.currency - cost), tradePrice }))
 	};
 }
 
@@ -179,8 +170,7 @@ json::Value Strategy_Mca::exportState() const {
 		{"budget", st.budget},
 		{"assets", st.assets},
 		{"currency", st.currency},
-		{"last_price", st.last_price},
-		{"neutral_price", st.neutral_price}
+		{"last_price", st.last_price}
 	};
 }
 
@@ -246,7 +236,6 @@ json::Value Strategy_Mca::dumpStatePretty(const IStockApi::MarketInfo &minfo) co
 		{"Budget", st.budget},
 		{"Assets", st.assets},
 		{"Currency", st.currency},
-		{"Last price", st.last_price},
-		{"Neutral price", st.neutral_price}
+		{"Last price", st.last_price}
 	};
 }
